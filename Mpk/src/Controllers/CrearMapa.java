@@ -1,8 +1,11 @@
 package Controllers;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.HashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -10,11 +13,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 
 import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
+import com.esri.client.local.ArcGISLocalFeatureLayer;
 import com.esri.map.JMap;
 import com.esri.map.LayerInitializeCompleteEvent;
 import com.esri.map.LayerInitializeCompleteListener;
+import com.esri.map.Layer.LayerStatus;
+import com.esri.toolkit.legend.JLegend;
+import com.esri.map.LayerInfo;
 
 public class CrearMapa {
 	
@@ -22,6 +30,7 @@ public class CrearMapa {
 	 private boolean isTiledLayerInitialized = false;
 	  private boolean isDynamicLayerInitialized = false;
 	  private JComponent contentPane;
+	  HashMap<String, LayerInfo> listaLayers = new HashMap<String, LayerInfo>();
 	  
 	 public JComponent crearMapa (JMap map ) {
 		 contentPane = createContentPane();
@@ -33,26 +42,42 @@ public class CrearMapa {
 		return contentPane;
 	}
 	
-	private void createMap(JMap map) { 
-		 updateProgresBarUI("Starting local dynamic map service...", true);
-			final ArcGISLocalDynamicMapServiceLayer dynamicLayer = new ArcGISLocalDynamicMapServiceLayer("C:\\Users\\UsuarioJAVA\\Documents\\ArcGIS\\Untitled.mpk");
-			dynamicLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
-				public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
-					System.out.println(" LayerInitializeCompleteEvent "+e.getID());
-					synchronized (progressBar) { 
-						if (e.getID() == LayerInitializeCompleteEvent.LOCALLAYERCREATE_ERROR) {
-							String errMsg = "Failed to initialize due to " + dynamicLayer.getInitializationError();
-							System.out.println(" error "+errMsg);
-						}
-						isDynamicLayerInitialized = true;
-						updateProgresBarUI(null, !(isDynamicLayerInitialized && isTiledLayerInitialized));
+	private void createMap(final JMap map) { 
+		updateProgresBarUI("Iniciando servicio de mapa.", true);
+		final ArcGISLocalDynamicMapServiceLayer arcGISLocalDynamicMapServiceLayer = new ArcGISLocalDynamicMapServiceLayer( System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk");
+		arcGISLocalDynamicMapServiceLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
+			public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
+				System.out.println(" LayerInitializeCompleteEvent " + arcGISLocalDynamicMapServiceLayer.getLayers());
+				synchronized (progressBar) {
+					if (arcGISLocalDynamicMapServiceLayer.getStatus() == LayerStatus.INITIALIZED) {
+						listaLayers= arcGISLocalDynamicMapServiceLayer.getLayers();
 					}
+					if (e.getID() == LayerInitializeCompleteEvent.LOCALLAYERCREATE_ERROR) {
+						String errMsg = "Failed to initialize due to " + arcGISLocalDynamicMapServiceLayer.getInitializationError();
+						System.out.println(" error " + errMsg);
+					}
+					isDynamicLayerInitialized = false;
+					System.out.println(" isDynamicLayerInitialized "+isDynamicLayerInitialized);
+					updateProgresBarUI(null, isDynamicLayerInitialized );
 				}
-			});
-			map.getLayers().add(dynamicLayer);
+			}
+		});
+		map.getLayers().add(arcGISLocalDynamicMapServiceLayer);
 	}
 	 
 	 
+	public void dibujarCapas(JMap map, JPanel panelMenuCapas) {
+		JLegend legend = new JLegend(map);
+		legend.setPreferredSize(new Dimension(300, 749));
+		legend.setBorder(new LineBorder(new Color(205, 205, 255), 3));
+		panelMenuCapas.add(legend, BorderLayout.WEST);
+	}
+	
+	
+	
+	
+	
+	
 	private void updateProgresBarUI(final String str, final boolean visible) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {

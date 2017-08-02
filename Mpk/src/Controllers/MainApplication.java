@@ -114,6 +114,7 @@ public class MainApplication {
 		frmMpk.getContentPane().add(PanelLayers, BorderLayout.WEST);
 		PanelLayers.setPreferredSize(new Dimension(300, 660));
 		PanelLayers.setLayout(new BorderLayout(0, 0));
+		crearMapa.dibujarCapas(map, PanelLayers); 
 	}
 
 }
