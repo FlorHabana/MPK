@@ -13,7 +13,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.SwingConstants;
+
+import com.esri.map.JMap;
+
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -24,7 +28,9 @@ public class MainApplication {
 
 	private JFrame frmMpk;
 	private JTextField txtUrl;
-
+	private JMap map = new JMap();
+	CrearMapa crearMapa = new CrearMapa();
+	
 	/**
 	 * Launch the application.
 	 */
@@ -54,7 +60,7 @@ public class MainApplication {
 	private void initialize() {
 		frmMpk = new JFrame();
 		frmMpk.setTitle("MPK");
-		frmMpk.setBounds(100, 100, 1200, 800);
+		frmMpk.setBounds(100, 100, 1200, 700);
 		frmMpk.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JPanel PanelButtons = new JPanel();
@@ -95,17 +101,12 @@ public class MainApplication {
 		JPanel PanelLayers = new JPanel();
 		frmMpk.getContentPane().add(PanelLayers, BorderLayout.WEST);
 		
-		JPanel PanelMap = new JPanel();
-		frmMpk.getContentPane().add(PanelMap, BorderLayout.CENTER);
-		
-		PanelMap.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-		PanelMap.setBackground(new Color(240, 248, 255));
-		frmMpk.getContentPane().add(PanelMap, BorderLayout.CENTER);
-		PanelMap.setLayout(new BorderLayout(0, 0));
+		frmMpk.add(crearMapa.crearMapa(map));
 		frmMpk.addWindowListener(new WindowAdapter() {
 	      @Override
 	      public void windowClosing(WindowEvent windowEvent) {
 	        super.windowClosing(windowEvent);
+	        map.dispose();
 	      }
 	    });
 		
