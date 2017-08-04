@@ -9,6 +9,8 @@ import java.awt.event.WindowEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,14 +25,16 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.ImageIcon;
 
 public class MainApplication {
 
 	private JFrame frmMpk;
-	private JTextField txtUrl;
 	private JMap map = new JMap();
+	JMap jmap=null;
+	String url="";
 	CrearMapa crearMapa = new CrearMapa();
-	
+	JComponent jComponent =null;
 	/**
 	 * Launch the application.
 	 */
@@ -67,41 +71,48 @@ public class MainApplication {
 		PanelButtons.setBackground(Color.WHITE);
 		frmMpk.getContentPane().add(PanelButtons, BorderLayout.NORTH);
 		GridBagLayout gbl_PanelButtons = new GridBagLayout();
-		gbl_PanelButtons.columnWidths = new int[]{91, 101, 298, 0, 0};
+		gbl_PanelButtons.columnWidths = new int[]{91, 101, 298, 0, 0, 0, 0};
 		gbl_PanelButtons.rowHeights = new int[]{0, 0, 23, 0};
-		gbl_PanelButtons.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_PanelButtons.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gbl_PanelButtons.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 		PanelButtons.setLayout(gbl_PanelButtons);
 		
-		JLabel lblUrl = new JLabel("Ingresar URL:");
-		GridBagConstraints gbc_lblUrl = new GridBagConstraints();
-		gbc_lblUrl.anchor = GridBagConstraints.EAST;
-		gbc_lblUrl.insets = new Insets(0, 0, 5, 5);
-		gbc_lblUrl.gridx = 1;
-		gbc_lblUrl.gridy = 1;
-		PanelButtons.add(lblUrl, gbc_lblUrl);
+		JButton btnDeleteData = new JButton("Borrar Archivo");
 		
-		txtUrl = new JTextField();
-		GridBagConstraints gbc_txtUrl = new GridBagConstraints();
-		gbc_txtUrl.insets = new Insets(0, 0, 5, 5);
-		gbc_txtUrl.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtUrl.gridx = 2;
-		gbc_txtUrl.gridy = 1;
-		PanelButtons.add(txtUrl, gbc_txtUrl);
-		txtUrl.setColumns(10);
+		GridBagConstraints gbc_btnDeleteData = new GridBagConstraints();
+		gbc_btnDeleteData.insets = new Insets(0, 0, 5, 5);
+		gbc_btnDeleteData.anchor = GridBagConstraints.NORTH;
+		gbc_btnDeleteData.gridx = 3;
+		gbc_btnDeleteData.gridy = 1;
+		PanelButtons.add(btnDeleteData, gbc_btnDeleteData);
 		
-		JButton btnAddData = new JButton("Agregar datos");
-		GridBagConstraints gbc_btnAddData = new GridBagConstraints();
-		gbc_btnAddData.insets = new Insets(0, 0, 5, 0);
-		gbc_btnAddData.anchor = GridBagConstraints.NORTH;
-		gbc_btnAddData.gridx = 3;
-		gbc_btnAddData.gridy = 1;
-		PanelButtons.add(btnAddData, gbc_btnAddData);
+		JButton btnIdentify = new JButton("");
+		btnIdentify.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Identify identify = new Identify(map);
+				identify.setVisible(true);
+			}
+		});
+		btnIdentify.setIcon(new ImageIcon(MainApplication.class.getResource("/img/info.png")));
+		btnIdentify.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(Color.white, 1), BorderFactory.createLineBorder(Color.white,2)));
+		GridBagConstraints gbc_btnIdentify = new GridBagConstraints();
+		gbc_btnIdentify.insets = new Insets(0, 0, 5, 0);
+		gbc_btnIdentify.gridx = 5;
+		gbc_btnIdentify.gridy = 1;
+		PanelButtons.add(btnIdentify, gbc_btnIdentify);
 		
 		JPanel PanelLayers = new JPanel();
-		frmMpk.getContentPane().add(PanelLayers, BorderLayout.WEST);
 		
-		frmMpk.add(crearMapa.crearMapa(map));
+		
+		frmMpk.getContentPane().add(PanelLayers, BorderLayout.WEST);
+//		btnAddData.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				url=txtUrl.getText();
+//				frmMpk.getContentPane().add(crearMapa.crearMapa(map, url));
+//			}
+//		});
+		jComponent =crearMapa.crearMapa(map);
+		frmMpk.getContentPane().add(jComponent);
 		frmMpk.addWindowListener(new WindowAdapter() {
 	      @Override
 	      public void windowClosing(WindowEvent windowEvent) {
@@ -109,6 +120,24 @@ public class MainApplication {
 	        map.dispose();
 	      }
 	    });
+		
+		
+		btnDeleteData.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Borrar "+jComponent.getComponentCount());
+				map.getLayers().clear();
+				int num = jComponent.getComponentCount();
+				while(num != 0){
+					System.out.println("antes num : " +jComponent.getComponentCount());
+					jComponent.remove(jComponent.getComponent(num-1));
+					System.out.println("despues num : " +jComponent.getComponentCount());
+					num--;
+				}
+				jComponent.repaint();
+				System.out.println("componente "+jComponent.getComponentCount());
+			}
+		});
+		
 		
 		PanelLayers.setBackground(new Color(240, 248, 255));
 		frmMpk.getContentPane().add(PanelLayers, BorderLayout.WEST);
