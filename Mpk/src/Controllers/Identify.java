@@ -20,6 +20,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import java.awt.FlowLayout;
 
 public class Identify extends JFrame {
 	MostrarCapas mostrarCapas = new MostrarCapas();
@@ -57,13 +58,20 @@ public class Identify extends JFrame {
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[]{0, 0, 0};
 		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
-		gbl_panel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+		gbl_panel.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
 		gbl_panel.rowWeights = new double[]{1.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
 		
-		JTextArea txtLista = new JTextArea();
-		txtLista.setEditable(false);
-		txtLista.setRows(8);
+		JPanel panel_infoCapas = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panel_infoCapas.getLayout();
+		flowLayout.setVgap(50);
+		panel_infoCapas.setBackground(Color.WHITE);
+		GridBagConstraints gbc_panel_infoCapas = new GridBagConstraints();
+		gbc_panel_infoCapas.insets = new Insets(0, 0, 5, 5);
+		gbc_panel_infoCapas.fill = GridBagConstraints.BOTH;
+		gbc_panel_infoCapas.gridx = 0;
+		gbc_panel_infoCapas.gridy = 0;
+		panel.add(panel_infoCapas, gbc_panel_infoCapas);
 		
 		JLabel lblIdentify = new JLabel("Identificar de : ");
 		GridBagConstraints gbc_lblIdentify = new GridBagConstraints();
@@ -85,17 +93,16 @@ public class Identify extends JFrame {
 		}
 		panel.add(CmbCapas, gbc_CmbCapas);
 		
-		mostrarCapas.llenarLista(CmbCapas, map, txtLista);
+		panel_infoCapas = mostrarCapas.llenarLista(CmbCapas, map);
 		
-		JScrollPane scrollPane = new JScrollPane(txtLista);
-		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-		gbc_scrollPane.gridheight = 3;
-		gbc_scrollPane.gridwidth = 2;
-		gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
-		gbc_scrollPane.fill = GridBagConstraints.BOTH;
-		gbc_scrollPane.gridx = 0;
-		gbc_scrollPane.gridy = 2;
-		panel.add(scrollPane, gbc_scrollPane);
+//		JScrollPane scrollPane = new JScrollPane(panel_infoCapas);
+//		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+//		gbc_scrollPane.gridheight = 3;
+//		gbc_scrollPane.gridwidth = 2;
+//		gbc_scrollPane.fill = GridBagConstraints.BOTH;
+//		gbc_scrollPane.gridx = 0;
+//		gbc_scrollPane.gridy = 2;
+//		panel.add(scrollPane, gbc_scrollPane);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBackground(SystemColor.control);
