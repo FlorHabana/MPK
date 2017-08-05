@@ -26,6 +26,9 @@ import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.ImageIcon;
+import com.esri.arcgis.beans.symbology.SymbologyBean;
+import javax.swing.border.LineBorder;
+import com.esri.arcgis.beans.toolbar.ToolbarBean;
 
 public class MainApplication {
 

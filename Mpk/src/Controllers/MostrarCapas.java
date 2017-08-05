@@ -36,10 +36,9 @@ public class MostrarCapas {
 		return names;
 	}
 	
-	public JPanel llenarLista(@SuppressWarnings("rawtypes") JComboBox CmbCapas, JMap map){
+	public JPanel llenarLista(@SuppressWarnings("rawtypes") final JComboBox CmbCapas, final JMap map){
 		
 		CmbCapas.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				for (int i = 0; i < map.getLayers().size(); i++) {
 					ArcGISLocalDynamicMapServiceLayer layer = (ArcGISLocalDynamicMapServiceLayer) map.getLayers().get(i);
