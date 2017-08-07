@@ -6,8 +6,13 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
+import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
 import com.esri.map.JMap;
+import com.esri.toolkit.JLayerTree;
+import com.esri.toolkit.legend.JLegend;
 
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
@@ -15,10 +20,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import java.awt.Color;
 import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import java.awt.FlowLayout;
 
@@ -26,52 +34,31 @@ public class Identify extends JFrame {
 	MostrarCapas mostrarCapas = new MostrarCapas();
 	
 	private JPanel contentPane;
-
-	/**
-	 * Launch the application.
-	 *
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Identify frame = new Identify();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}*/
+	JComboBox CmbCapas = new JComboBox();
+	private BorderLayout bl_panel_infoCapas = new BorderLayout();
+	JPanel panel_infoCapas = new JPanel(bl_panel_infoCapas);
+	JPanel panel = new JPanel();
+	int num=0;
 
 	/**
 	 * Create the frame.
 	 */
-	public Identify( JMap map) {
+	public Identify(final JMap map) {
 		setBounds(100, 100, 400, 550);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
+		setLocationRelativeTo(null);
+		setResizable(false);
 		
-		JPanel panel = new JPanel();
 		contentPane.add(panel, BorderLayout.NORTH);
 		GridBagLayout gbl_panel = new GridBagLayout();
 		gbl_panel.columnWidths = new int[]{0, 0, 0};
-		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
-		gbl_panel.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
+		gbl_panel.rowHeights = new int[]{0, 0, 0, 5, 10, 0};
+		gbl_panel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 		gbl_panel.rowWeights = new double[]{1.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
-		
-		JPanel panel_infoCapas = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) panel_infoCapas.getLayout();
-		flowLayout.setVgap(50);
-		panel_infoCapas.setBackground(Color.WHITE);
-		GridBagConstraints gbc_panel_infoCapas = new GridBagConstraints();
-		gbc_panel_infoCapas.insets = new Insets(0, 0, 5, 5);
-		gbc_panel_infoCapas.fill = GridBagConstraints.BOTH;
-		gbc_panel_infoCapas.gridx = 0;
-		gbc_panel_infoCapas.gridy = 0;
-		panel.add(panel_infoCapas, gbc_panel_infoCapas);
 		
 		JLabel lblIdentify = new JLabel("Identificar de : ");
 		GridBagConstraints gbc_lblIdentify = new GridBagConstraints();
@@ -81,7 +68,6 @@ public class Identify extends JFrame {
 		gbc_lblIdentify.gridy = 1;
 		panel.add(lblIdentify, gbc_lblIdentify);
 		
-		JComboBox CmbCapas = new JComboBox();
 		CmbCapas.setBackground(Color.WHITE);
 		GridBagConstraints gbc_CmbCapas = new GridBagConstraints();
 		gbc_CmbCapas.insets = new Insets(0, 0, 5, 0);
@@ -91,18 +77,24 @@ public class Identify extends JFrame {
 		for(String name : mostrarCapas.llenarCombo(map)){
 			CmbCapas.addItem(name);
 		}
+		
+		CmbCapas.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				llenarLista(map);
+				System.out.println("Cambio en el combo "+num);
+				num+=1;
+			}
+		});
 		panel.add(CmbCapas, gbc_CmbCapas);
 		
-		panel_infoCapas = mostrarCapas.llenarLista(CmbCapas, map);
-		
-//		JScrollPane scrollPane = new JScrollPane(panel_infoCapas);
-//		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-//		gbc_scrollPane.gridheight = 3;
-//		gbc_scrollPane.gridwidth = 2;
-//		gbc_scrollPane.fill = GridBagConstraints.BOTH;
-//		gbc_scrollPane.gridx = 0;
-//		gbc_scrollPane.gridy = 2;
-//		panel.add(scrollPane, gbc_scrollPane);
+		panel_infoCapas.setBackground(Color.WHITE);
+		GridBagConstraints gbc_panel_infoCapas = new GridBagConstraints();
+		gbc_panel_infoCapas.gridwidth = 2;
+		gbc_panel_infoCapas.insets = new Insets(0, 0, 5, 5);
+		gbc_panel_infoCapas.fill = GridBagConstraints.BOTH;
+		gbc_panel_infoCapas.gridx = 0;
+		gbc_panel_infoCapas.gridy = 3;
+		panel.add(panel_infoCapas, gbc_panel_infoCapas);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBackground(SystemColor.control);
@@ -114,7 +106,7 @@ public class Identify extends JFrame {
 		gbl_panel_1.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel_1.setLayout(gbl_panel_1);
 		
-		JLabel lblEtiqueta = new JLabel("Ubicación : ");
+		JLabel lblEtiqueta = new JLabel("Ubicaci\u00F3n : ");
 		lblEtiqueta.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_lblEtiqueta = new GridBagConstraints();
 		gbc_lblEtiqueta.insets = new Insets(0, 0, 5, 5);
@@ -148,7 +140,7 @@ public class Identify extends JFrame {
 		gbc_txtInfo.gridy = 2;
 		panel_1.add(txtInfo, gbc_txtInfo);
 		
-		JLabel lblNewLabel_1 = new JLabel("1 Característica identificada");
+		JLabel lblNewLabel_1 = new JLabel("1 Caracter\u00EDstica identificada");
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 		gbc_lblNewLabel_1.insets = new Insets(0, 0, 0, 5);
@@ -158,4 +150,25 @@ public class Identify extends JFrame {
 		panel_1.add(lblNewLabel_1, gbc_lblNewLabel_1);
 	}
 
+	public void llenarLista(final JMap map){
+		for (int i = 0; i < map.getLayers().size(); i++) {
+			ArcGISLocalDynamicMapServiceLayer layer = (ArcGISLocalDynamicMapServiceLayer) map.getLayers().get(i);
+			for (int j = 0; j < layer.getLayersList().size(); j++) {
+				if(CmbCapas.getSelectedItem().equals(layer.getSubLayer(j).getName())){
+					DefaultMutableTreeNode padre = new DefaultMutableTreeNode(layer.getSubLayer(j).getName());
+					DefaultMutableTreeNode capa = new DefaultMutableTreeNode(layer.getSubLayer(j).getChildLayer(0));
+					padre.add(capa);
+					DefaultTreeModel modelo = new DefaultTreeModel(padre);
+
+					JTree jTree = new JTree(modelo);
+					JScrollPane sp = new JScrollPane(jTree);
+					sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED); 
+					sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); 
+					panel_infoCapas.add(BorderLayout.NORTH, sp);
+					panel_infoCapas.updateUI();
+					System.out.println("Despu�s de actualizar "+num);
+				}
+			}
+		}
+	}
 }

@@ -22,12 +22,16 @@ import com.esri.arcgis.carto.TopologyLayer;
 import com.esri.arcgis.datasourcesGDB.FileGDBScratchWorkspaceFactory;
 import com.esri.arcgis.datasourcesGDB.FileGDBWorkspaceFactory;
 import com.esri.arcgis.display.IDisplay;
+import com.esri.arcgis.enginecore.PackageFile;
 import com.esri.arcgis.geodatabase.IFeatureWorkspace;
 import com.esri.arcgis.geodatabase.IWorkspace;
 import com.esri.arcgis.geodatabase.IWorkspaceFactory;
 import com.esri.arcgis.geodatabase.IWorkspaceName;
 import com.esri.arcgis.geodatabase.Topology;
 import com.esri.arcgis.geodatabase.TopologyErrorFeature;
+import com.esri.arcgis.geoprocessing.GPTool;
+import com.esri.arcgis.geoprocessing.GeoProcessor;
+import com.esri.arcgis.geoprocessing.tools.datamanagementtools.ExtractPackage;
 import com.esri.arcgis.geoprocessing.tools.datamanagementtools.PackageMap;
 import com.esri.arcgis.geoprocessing.tools.datamanagementtools.UncompressFileGeodatabaseData;
 import com.esri.arcgis.interop.AutomationException;
@@ -108,6 +112,16 @@ public class CrearMapa {
 					if (arcGISLocalDynamicMapServiceLayer.getStatus() == LayerStatus.INITIALIZED) {
 						listaLayers= arcGISLocalDynamicMapServiceLayer.getLayers();
 						createTopology(map);
+						try {
+							ExtractPackage extractPackage = new ExtractPackage(System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk", System.getProperty("user.home")+"\\Documents\\ArcGIS\\test\\");
+							System.out.println("//////extractPackage : "+extractPackage);
+							GeoProcessor geoProcessor = new GeoProcessor();
+							ITrackCancel pTrackCancel=null;
+							geoProcessor.execute(extractPackage, pTrackCancel);
+							System.out.println("gp : "+ geoProcessor.getMessageCount());
+						} catch (Exception e1) {
+							System.out.println("Error : "+e1.getMessage());
+						}
 					}
 					if (e.getID() == LayerInitializeCompleteEvent.LOCALLAYERCREATE_ERROR) {
 						String errMsg = "Failed to initialize due to " + arcGISLocalDynamicMapServiceLayer.getInitializationError();
