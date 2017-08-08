@@ -29,6 +29,8 @@ import javax.swing.ImageIcon;
 import com.esri.arcgis.beans.symbology.SymbologyBean;
 import javax.swing.border.LineBorder;
 import com.esri.arcgis.beans.toolbar.ToolbarBean;
+import com.esri.arcgis.geodatabase.Workspace;
+import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
 
 public class MainApplication {
 
@@ -90,6 +92,7 @@ public class MainApplication {
 		PanelButtons.add(btnDeleteData, gbc_btnDeleteData);
 		
 		JButton btnIdentify = new JButton("");
+		btnIdentify.setEnabled(false);
 		btnIdentify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Identify identify = new Identify(map);
@@ -106,7 +109,6 @@ public class MainApplication {
 		
 		JPanel PanelLayers = new JPanel();
 		
-		
 		frmMpk.getContentPane().add(PanelLayers, BorderLayout.WEST);
 //		btnAddData.addActionListener(new ActionListener() {
 //			public void actionPerformed(ActionEvent e) {
@@ -114,7 +116,7 @@ public class MainApplication {
 //				frmMpk.getContentPane().add(crearMapa.crearMapa(map, url));
 //			}
 //		});
-		jComponent =crearMapa.crearMapa(map);
+		jComponent =crearMapa.crearMapa(map, btnIdentify);
 		frmMpk.getContentPane().add(jComponent);
 		frmMpk.addWindowListener(new WindowAdapter() {
 	      @Override

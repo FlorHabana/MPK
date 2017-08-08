@@ -8,6 +8,7 @@ import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.util.HashMap;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
@@ -19,18 +20,32 @@ import javax.swing.border.LineBorder;
 import com.esri.arcgis.carto.ILayer;
 import com.esri.arcgis.carto.MapServer;
 import com.esri.arcgis.carto.TopologyLayer;
+import com.esri.arcgis.datasourcesGDB.AccessWorkspaceFactory;
 import com.esri.arcgis.datasourcesGDB.FileGDBScratchWorkspaceFactory;
 import com.esri.arcgis.datasourcesGDB.FileGDBWorkspaceFactory;
+import com.esri.arcgis.datasourcesGDB.SdeWorkspaceFactory;
 import com.esri.arcgis.display.IDisplay;
 import com.esri.arcgis.enginecore.PackageFile;
+import com.esri.arcgis.geodatabase.FeatureClass;
+import com.esri.arcgis.geodatabase.IDataset;
+import com.esri.arcgis.geodatabase.IDatasetName;
+import com.esri.arcgis.geodatabase.IEnumDataset;
+import com.esri.arcgis.geodatabase.IEnumDatasetName;
+import com.esri.arcgis.geodatabase.IEnumDatasetProxy;
+import com.esri.arcgis.geodatabase.IFeatureClass;
 import com.esri.arcgis.geodatabase.IFeatureWorkspace;
+import com.esri.arcgis.geodatabase.ITopology;
 import com.esri.arcgis.geodatabase.IWorkspace;
 import com.esri.arcgis.geodatabase.IWorkspaceFactory;
 import com.esri.arcgis.geodatabase.IWorkspaceName;
 import com.esri.arcgis.geodatabase.Topology;
 import com.esri.arcgis.geodatabase.TopologyErrorFeature;
+import com.esri.arcgis.geodatabase.Workspace;
+import com.esri.arcgis.geodatabase.WorkspaceFactory;
+import com.esri.arcgis.geodatabase.esriDatasetType;
 import com.esri.arcgis.geoprocessing.GPTool;
 import com.esri.arcgis.geoprocessing.GeoProcessor;
+import com.esri.arcgis.geoprocessing.IGeoProcessorResult;
 import com.esri.arcgis.geoprocessing.tools.datamanagementtools.ExtractPackage;
 import com.esri.arcgis.geoprocessing.tools.datamanagementtools.PackageMap;
 import com.esri.arcgis.geoprocessing.tools.datamanagementtools.UncompressFileGeodatabaseData;
@@ -42,8 +57,16 @@ import com.esri.arcgis.system.IName;
 import com.esri.arcgis.system.IPropertySet;
 import com.esri.arcgis.system.ITrackCancel;
 import com.esri.arcgis.system.IUID;
+import com.esri.arcgis.system.PropertySet;
+import com.esri.arcgisruntime.localserver.LocalServer;
 import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
 import com.esri.client.local.ArcGISLocalFeatureLayer;
+import com.esri.core.geodatabase.Geodatabase;
+import com.esri.core.geodatabase.GeodatabaseFeatureTable;
+import com.esri.core.map.CallbackListener;
+import com.esri.core.map.Feature;
+import com.esri.core.map.FeatureResult;
+import com.esri.core.tasks.query.QueryParameters;
 import com.esri.map.JMap;
 import com.esri.map.Layer;
 import com.esri.map.LayerInitializeCompleteEvent;
@@ -65,7 +88,8 @@ public class CrearMapa {
 	static String nuevaURL=System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk"; 
 	 
 	
-	public JComponent crearMapa (final JMap map ) {
+	public JComponent crearMapa (final JMap map, JButton button ) {
+		com.esri.client.local.LocalServer.getInstance().initializeAsync();
 		contentPane = createContentPane();
 		contentPane.setBackground(Color.BLUE);
 		System.out.println("metodo crear mapa");
@@ -96,32 +120,35 @@ public class CrearMapa {
 //	        });
 		 
 		progressBar = createProgressBar(contentPane);
-		createMap(map, nuevaURL);
+		createMap(map, nuevaURL, button);
 		contentPane.add(progressBar);
 		contentPane.add(map);
 		return contentPane;
 	}
 
-	private void createMap(final JMap map, String url) { 
+	private void createMap(final JMap map, String url, final JButton button) { 
 		updateProgresBarUI("Iniciando servicio de mapa.", true);
+		iniciarArcObjects();
 		final ArcGISLocalDynamicMapServiceLayer arcGISLocalDynamicMapServiceLayer = new ArcGISLocalDynamicMapServiceLayer(url);
 		arcGISLocalDynamicMapServiceLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
 			public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
 				System.out.println(" LayerInitializeCompleteEvent " + arcGISLocalDynamicMapServiceLayer.getLayers());
 				synchronized (progressBar) {
 					if (arcGISLocalDynamicMapServiceLayer.getStatus() == LayerStatus.INITIALIZED) {
+						button.setEnabled(true);
 						listaLayers= arcGISLocalDynamicMapServiceLayer.getLayers();
-						createTopology(map);
-						try {
-							ExtractPackage extractPackage = new ExtractPackage(System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk", System.getProperty("user.home")+"\\Documents\\ArcGIS\\test\\");
-							System.out.println("//////extractPackage : "+extractPackage);
-							GeoProcessor geoProcessor = new GeoProcessor();
-							ITrackCancel pTrackCancel=null;
-							geoProcessor.execute(extractPackage, pTrackCancel);
-							System.out.println("gp : "+ geoProcessor.getMessageCount());
-						} catch (Exception e1) {
-							System.out.println("Error : "+e1.getMessage());
-						}
+//						createTopology(map);
+						
+//						try {
+//							ExtractPackage extractPackage = new ExtractPackage(System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk", System.getProperty("user.home")+"\\Documents\\ArcGIS\\test\\");
+//							System.out.println("//////extractPackage : "+extractPackage);
+//							GeoProcessor geoProcessor = new GeoProcessor();
+//							ITrackCancel pTrackCancel=null;
+//							geoProcessor.execute(extractPackage, pTrackCancel);
+//							System.out.println("gp : "+ geoProcessor.getMessageCount());
+//						} catch (Exception e1) {
+//							System.out.println("Error : "+e1.getMessage());
+//						}
 					}
 					if (e.getID() == LayerInitializeCompleteEvent.LOCALLAYERCREATE_ERROR) {
 						String errMsg = "Failed to initialize due to " + arcGISLocalDynamicMapServiceLayer.getInitializationError();
@@ -209,4 +236,15 @@ public class CrearMapa {
 		contentPane.setVisible(true);
 		return contentPane;
 	}
+	
+	
+	public static void iniciarArcObjects(){ 
+		try {
+			EngineInitializer.initializeEngine();
+		} catch (Exception e) {
+			System.out.println(" Exception ---------------------------------- "+e.getMessage());
+		}
+
+	}
+	
 }

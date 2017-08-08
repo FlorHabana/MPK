@@ -38,7 +38,6 @@ public class Identify extends JFrame {
 	private BorderLayout bl_panel_infoCapas = new BorderLayout();
 	JPanel panel_infoCapas = new JPanel(bl_panel_infoCapas);
 	JPanel panel = new JPanel();
-	int num=0;
 
 	/**
 	 * Create the frame.
@@ -81,8 +80,6 @@ public class Identify extends JFrame {
 		CmbCapas.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				llenarLista(map);
-				System.out.println("Cambio en el combo "+num);
-				num+=1;
 			}
 		});
 		panel.add(CmbCapas, gbc_CmbCapas);
@@ -151,6 +148,7 @@ public class Identify extends JFrame {
 	}
 
 	public void llenarLista(final JMap map){
+		mostrarCapas.cleanPanel(panel_infoCapas);
 		for (int i = 0; i < map.getLayers().size(); i++) {
 			ArcGISLocalDynamicMapServiceLayer layer = (ArcGISLocalDynamicMapServiceLayer) map.getLayers().get(i);
 			for (int j = 0; j < layer.getLayersList().size(); j++) {
@@ -159,14 +157,14 @@ public class Identify extends JFrame {
 					DefaultMutableTreeNode capa = new DefaultMutableTreeNode(layer.getSubLayer(j).getChildLayer(0));
 					padre.add(capa);
 					DefaultTreeModel modelo = new DefaultTreeModel(padre);
-
 					JTree jTree = new JTree(modelo);
+					jTree.updateUI();
 					JScrollPane sp = new JScrollPane(jTree);
 					sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED); 
 					sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); 
+					sp.updateUI();					
 					panel_infoCapas.add(BorderLayout.NORTH, sp);
 					panel_infoCapas.updateUI();
-					System.out.println("Después de actualizar "+num);
 				}
 			}
 		}

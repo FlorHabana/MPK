@@ -14,5 +14,13 @@
 	<classpathentry kind="lib" path="C:/Users/Job/.p2/pool/plugins/org.eclipse.jface.text_3.11.2.v20170220-1911.jar" sourcepath="C:/Users/Job/.p2/pool/plugins/org.eclipse.jface.text_3.11.2.v20170220-1911.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Job/.p2/pool/plugins/org.eclipse.ui.workbench_3.108.3.v20170216-1539.jar" sourcepath="C:/Users/Job/.p2/pool/plugins/org.eclipse.ui.workbench_3.108.3.v20170216-1539.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Job/.p2/pool/plugins/org.eclipse.ui.forms_3.7.1.v20161220-1635.jar" sourcepath="C:/Users/Job/.p2/pool/plugins/org.eclipse.ui.forms_3.7.1.v20161220-1635.jar"/>
+	<classpathentry kind="lib" path="Libraries/arcgis-java-api-javadoc.jar"/>
+	<classpathentry kind="lib" path="Libraries/arcgis-java-api.jar"/>
+	<classpathentry kind="lib" path="Libraries/commons-codec-1.9.jar"/>
+	<classpathentry kind="lib" path="Libraries/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="Libraries/gson-2.2.2.jar"/>
+	<classpathentry kind="lib" path="Libraries/l2fprod-common.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/ArcGIS SDKs/java10.2.4/sdk/jars/ArcGIS_Runtime_Java_Toolkit.jar"/>
+	<classpathentry kind="con" path="com.esri.arcgis.core.lib.classpathContainerInitializer.desktop"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
