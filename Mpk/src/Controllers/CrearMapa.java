@@ -7,6 +7,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -67,12 +68,19 @@ import com.esri.core.map.CallbackListener;
 import com.esri.core.map.Feature;
 import com.esri.core.map.FeatureResult;
 import com.esri.core.tasks.query.QueryParameters;
+import com.esri.map.ArcGISFeatureLayer;
+import com.esri.map.FeatureLayer;
+import com.esri.map.GraphicsLayer;
 import com.esri.map.JMap;
 import com.esri.map.Layer;
 import com.esri.map.LayerInitializeCompleteEvent;
 import com.esri.map.LayerInitializeCompleteListener;
+import com.esri.map.LayerList;
 import com.esri.map.Layer.LayerStatus;
 import com.esri.toolkit.legend.JLegend;
+import com.esri.toolkit.overlays.HitTestEvent;
+import com.esri.toolkit.overlays.HitTestListener;
+import com.esri.toolkit.overlays.HitTestOverlay;
 
 import Classes.FileDrop;
 
@@ -126,29 +134,27 @@ public class CrearMapa {
 		return contentPane;
 	}
 
-	private void createMap(final JMap map, String url, final JButton button) { 
+	private void createMap(final JMap map, final String url, final JButton button) { 
 		updateProgresBarUI("Iniciando servicio de mapa.", true);
-		iniciarArcObjects();
+//		iniciarArcObjects();
 		final ArcGISLocalDynamicMapServiceLayer arcGISLocalDynamicMapServiceLayer = new ArcGISLocalDynamicMapServiceLayer(url);
 		arcGISLocalDynamicMapServiceLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
 			public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
 				System.out.println(" LayerInitializeCompleteEvent " + arcGISLocalDynamicMapServiceLayer.getLayers());
 				synchronized (progressBar) {
 					if (arcGISLocalDynamicMapServiceLayer.getStatus() == LayerStatus.INITIALIZED) {
-						button.setEnabled(true);
+						button.setEnabled(true); 
 						listaLayers= arcGISLocalDynamicMapServiceLayer.getLayers();
-//						createTopology(map);
-						
-//						try {
-//							ExtractPackage extractPackage = new ExtractPackage(System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk", System.getProperty("user.home")+"\\Documents\\ArcGIS\\test\\");
-//							System.out.println("//////extractPackage : "+extractPackage);
-//							GeoProcessor geoProcessor = new GeoProcessor();
-//							ITrackCancel pTrackCancel=null;
-//							geoProcessor.execute(extractPackage, pTrackCancel);
-//							System.out.println("gp : "+ geoProcessor.getMessageCount());
-//						} catch (Exception e1) {
-//							System.out.println("Error : "+e1.getMessage());
-//						}
+						for (int i = 0; i < listaLayers.size(); i++) {
+							LayerInfo layerInfo = (LayerInfo) listaLayers.values().toArray()[i]; 
+							ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = new ArcGISLocalFeatureLayer(url+"\\", layerInfo.getId());
+							map.getLayers().add(arcGISLocalFeatureLayer);
+							arcGISLocalFeatureLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
+								public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
+									
+								}
+							});
+						}
 					}
 					if (e.getID() == LayerInitializeCompleteEvent.LOCALLAYERCREATE_ERROR) {
 						String errMsg = "Failed to initialize due to " + arcGISLocalDynamicMapServiceLayer.getInitializationError();
@@ -244,7 +250,51 @@ public class CrearMapa {
 		} catch (Exception e) {
 			System.out.println(" Exception ---------------------------------- "+e.getMessage());
 		}
-
+	}
+	
+	public void agregarEvento(JMap map) {
+		System.out.println(" prueba " + map.getLayers());
+		LayerList listLayers = map.getLayers();
+		if (listaLayers != null) {
+			for (int x= 0; x<listLayers.size(); x++) {
+				ArcGISLocalDynamicMapServiceLayer arcGISLocalDynamicMapServiceLayer = (ArcGISLocalDynamicMapServiceLayer) listLayers.get(x);
+				HashMap<String, LayerInfo> hashMap = arcGISLocalDynamicMapServiceLayer.getLayers();
+				for (int i = 0; i < hashMap.size(); i++) {
+					LayerInfo layerInfo = (LayerInfo) hashMap.values().toArray()[i];
+					//seleccionarPredio(map, layerInfo);
+				}
+				System.out.println("arcGISLocalDynamicMapServiceLayer "+arcGISLocalDynamicMapServiceLayer.getLayers());
+			}
+		}
+	}
+	public void seleccionarPredio(JMap map, ArcGISLocalFeatureLayer arcGISFeatureLayer) {
+		LayerList layerList = map.getLayers();
+		HitTestListener listener = SeleccionarPredio();
+		final HitTestOverlay selectionOverlay = new HitTestOverlay(arcGISFeatureLayer, listener);
+		
+		map.addMapOverlay(selectionOverlay);
+	}
+	
+	public HitTestListener SeleccionarPredio() {
+		HitTestListener listener = new HitTestListener() {
+			public void featureHit(HitTestEvent event) {
+				// System.out.println(" event " +event.getSource() );
+				HitTestOverlay overlay = (HitTestOverlay) event.getSource();
+				// System.out.println(" overlay " +overlay.getHitFeatures() );
+				List<Feature> hitFeatures = overlay.getHitFeatures();
+				ArcGISFeatureLayer arcGISFeatureLayer = (ArcGISFeatureLayer) overlay.getLayer();
+				arcGISFeatureLayer.clearSelection();
+				for (Feature feature : hitFeatures) {
+					if (arcGISFeatureLayer.isGraphicSelected((int) feature.getId())) {
+						arcGISFeatureLayer.unselect((int) feature.getId());
+					} else {
+						arcGISFeatureLayer.select((int) feature.getId());
+						arcGISFeatureLayer.setSelectionColor(Color.BLUE);
+					}
+				}
+			}
+		};
+		return listener;
 	}
 	
 }
