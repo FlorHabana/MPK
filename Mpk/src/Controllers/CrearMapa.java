@@ -144,38 +144,34 @@ public class CrearMapa {
 				synchronized (progressBar) {
 					if (arcGISLocalDynamicMapServiceLayer.getStatus() == LayerStatus.INITIALIZED) {
 						button.setEnabled(true); 
-						try {
-							listaLayers= arcGISLocalDynamicMapServiceLayer.getLayers();
-							for (int i = 0; i < listaLayers.size(); i++) {
-								LayerInfo layerInfo = (LayerInfo) listaLayers.values().toArray()[i]; 
-								ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = new ArcGISLocalFeatureLayer(url+"\\", layerInfo.getId());
-								map.getLayers().add(arcGISLocalFeatureLayer);
-								arcGISLocalFeatureLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
-									public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
+						listaLayers= arcGISLocalDynamicMapServiceLayer.getLayers();
+						for (int i = 0; i < listaLayers.size(); i++) {
+							LayerInfo layerInfo = (LayerInfo) listaLayers.values().toArray()[i]; 
+							ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = new ArcGISLocalFeatureLayer(url+"\\", layerInfo.getId());
+							map.getLayers().add(arcGISLocalFeatureLayer);
+							arcGISLocalFeatureLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
+								public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
 
-									}
-								});
-								if(map.getLayers().get(i).getName()!=null){
-									if(map.getLayers().get(i).getName().equals("Layers")){
-										map.getLayers().remove(i);
-									}
 								}
-							}
-							for (Layer layer : map.getLayers()) {
-								groupLayer.add(layer);
-							}
-							if(map.getLayers().size()>0){
-								System.out.println("if--->Antes de remover..."+map.getLayers().size());
-								while(map.getLayers().size()!=0){
-									map.getLayers().remove(map.getLayers().size()-1);
-								}
-							}
-							if(map.getLayers().size()==0){
-								map.getLayers().add(groupLayer);
-							}
-						} catch (Exception e2) {
-							System.out.println("e2 : "+e2.getMessage());
+							});
 						}
+						for (int i = 0; i < map.getLayers().size(); i++) {
+							if(map.getLayers().get(i).getName()!=null){
+								if(map.getLayers().get(i).getName().equals("Layers")){
+									map.getLayers().remove(i);
+								}
+							}
+						}
+						for (Layer layer : map.getLayers()) {
+							groupLayer.add(layer);
+						}
+						groupLayer.setName("Capas");
+						map.getLayers().clear();
+						System.out.println("map.getLayers------> "+map.getLayers().size());
+						if(map.getLayers().size()==0){
+							map.getLayers().add(groupLayer);
+						}
+						System.out.println("despues de agregar grouplayer map.getLayers------> "+map.getLayers().size());
 					}
 					if (e.getID() == LayerInitializeCompleteEvent.LOCALLAYERCREATE_ERROR) {
 						String errMsg = "Failed to initialize due to " + arcGISLocalDynamicMapServiceLayer.getInitializationError();
