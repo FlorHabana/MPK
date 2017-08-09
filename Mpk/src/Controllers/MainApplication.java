@@ -31,6 +31,7 @@ import javax.swing.border.LineBorder;
 import com.esri.arcgis.beans.toolbar.ToolbarBean;
 import com.esri.arcgis.geodatabase.Workspace;
 import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
+import java.awt.Toolkit;
 
 public class MainApplication {
 
@@ -68,6 +69,7 @@ public class MainApplication {
 	 */
 	private void initialize() {
 		frmMpk = new JFrame();
+		frmMpk.setIconImage(Toolkit.getDefaultToolkit().getImage(MainApplication.class.getResource("/img/earth-globe.png")));
 		frmMpk.setTitle("MPK");
 		frmMpk.setBounds(100, 100, 1200, 700);
 		frmMpk.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -82,7 +84,11 @@ public class MainApplication {
 		gbl_PanelButtons.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 		PanelButtons.setLayout(gbl_PanelButtons);
 		
-		JButton btnDeleteData = new JButton("Borrar Archivo");
+		JButton btnDeleteData = new JButton("");
+		btnDeleteData.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(Color.white, 1), BorderFactory.createLineBorder(Color.white,2)));
+		btnDeleteData.setBackground(Color.WHITE);
+		btnDeleteData.setToolTipText("Borrar Archivo");
+		btnDeleteData.setIcon(new ImageIcon(MainApplication.class.getResource("/img/garbage.png")));
 		
 		GridBagConstraints gbc_btnDeleteData = new GridBagConstraints();
 		gbc_btnDeleteData.insets = new Insets(0, 0, 5, 5);
@@ -92,14 +98,17 @@ public class MainApplication {
 		PanelButtons.add(btnDeleteData, gbc_btnDeleteData);
 		
 		JButton btnIdentify = new JButton("");
+		btnIdentify.setToolTipText("Informaci\u00F3n");
+		btnIdentify.setBackground(Color.WHITE);
 		btnIdentify.setEnabled(false);
 		btnIdentify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Identify identify = new Identify(map);
-				identify.setVisible(true);
+//				Identify identify = new Identify(map);
+//				identify.setVisible(true);
+				crearMapa.agregarEvento(map);
 			}
 		});
-		btnIdentify.setIcon(new ImageIcon(MainApplication.class.getResource("/img/info.png")));
+		btnIdentify.setIcon(new ImageIcon(MainApplication.class.getResource("/img/info24.png")));
 		btnIdentify.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(Color.white, 1), BorderFactory.createLineBorder(Color.white,2)));
 		GridBagConstraints gbc_btnIdentify = new GridBagConstraints();
 		gbc_btnIdentify.insets = new Insets(0, 0, 5, 0);

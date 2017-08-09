@@ -8,6 +8,7 @@ import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -67,10 +68,13 @@ import com.esri.core.geodatabase.GeodatabaseFeatureTable;
 import com.esri.core.map.CallbackListener;
 import com.esri.core.map.Feature;
 import com.esri.core.map.FeatureResult;
+import com.esri.core.map.Field;
 import com.esri.core.tasks.query.QueryParameters;
+import com.esri.core.tasks.query.QueryTask;
 import com.esri.map.ArcGISFeatureLayer;
 import com.esri.map.FeatureLayer;
 import com.esri.map.GraphicsLayer;
+import com.esri.map.GroupLayer;
 import com.esri.map.JMap;
 import com.esri.map.Layer;
 import com.esri.map.LayerInitializeCompleteEvent;
@@ -274,32 +278,29 @@ public class CrearMapa {
 		LayerList listLayers = map.getLayers();
 		if (listaLayers != null) {
 			for (int x= 0; x<listLayers.size(); x++) {
-				ArcGISLocalDynamicMapServiceLayer arcGISLocalDynamicMapServiceLayer = (ArcGISLocalDynamicMapServiceLayer) listLayers.get(x);
-				HashMap<String, LayerInfo> hashMap = arcGISLocalDynamicMapServiceLayer.getLayers();
-				for (int i = 0; i < hashMap.size(); i++) {
-					LayerInfo layerInfo = (LayerInfo) hashMap.values().toArray()[i];
-					//seleccionarPredio(map, layerInfo);
+				GroupLayer groupLayer = (GroupLayer) listLayers.get(x);
+				Layer[] layers = groupLayer.getLayers();
+				for (int i = 0; i < layers.length; i++) {
+					ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) layers[i];
+					seleccionarPredio(map, arcGISLocalFeatureLayer);
 				}
-				System.out.println("arcGISLocalDynamicMapServiceLayer "+arcGISLocalDynamicMapServiceLayer.getLayers());
+				//System.out.println("arcGISLocalDynamicMapServiceLayer "+arcGISLocalDynamicMapServiceLayer.getLayers());
 			}
 		}
 	}
 	public void seleccionarPredio(JMap map, ArcGISLocalFeatureLayer arcGISFeatureLayer) {
 		LayerList layerList = map.getLayers();
-		HitTestListener listener = SeleccionarPredio();
+		HitTestListener listener = SeleccionarPredio( map);
 		final HitTestOverlay selectionOverlay = new HitTestOverlay(arcGISFeatureLayer, listener);
-		
 		map.addMapOverlay(selectionOverlay);
 	}
 	
-	public HitTestListener SeleccionarPredio() {
+	public HitTestListener SeleccionarPredio(final JMap map) {
 		HitTestListener listener = new HitTestListener() {
 			public void featureHit(HitTestEvent event) {
-				// System.out.println(" event " +event.getSource() );
 				HitTestOverlay overlay = (HitTestOverlay) event.getSource();
-				// System.out.println(" overlay " +overlay.getHitFeatures() );
 				List<Feature> hitFeatures = overlay.getHitFeatures();
-				ArcGISFeatureLayer arcGISFeatureLayer = (ArcGISFeatureLayer) overlay.getLayer();
+				ArcGISLocalFeatureLayer arcGISFeatureLayer = (ArcGISLocalFeatureLayer) overlay.getLayer();
 				arcGISFeatureLayer.clearSelection();
 				for (Feature feature : hitFeatures) {
 					if (arcGISFeatureLayer.isGraphicSelected((int) feature.getId())) {
@@ -307,11 +308,51 @@ public class CrearMapa {
 					} else {
 						arcGISFeatureLayer.select((int) feature.getId());
 						arcGISFeatureLayer.setSelectionColor(Color.BLUE);
+						mostrarInformacionFeature (map, arcGISFeatureLayer, (int) feature.getId());
 					}
 				}
 			}
 		};
 		return listener;
+	}
+	
+	public void mostrarInformacionFeature (JMap map, ArcGISLocalFeatureLayer arcGISLocalFeatureLayer, int id) {
+		Field[] fields = arcGISLocalFeatureLayer.getFields();
+		String Campo="OBJECTID";
+		for (int x=0; x<fields.length; x++) {  
+			Field fiel = fields[x];
+			if (x==0) {
+				Campo =fiel.getName();
+				System.out.println(" x "+x +" "+ fiel.getName() + " id "+id +" url "+arcGISLocalFeatureLayer.getUrl());
+			}
+		}
+		QueryTask queryTask = new QueryTask(arcGISLocalFeatureLayer.getUrl());
+		QueryParameters query = new QueryParameters();
+		query.setOutFields(new String[] {"*"});
+		query.setWhere(Campo+"="+id  );
+		query.setReturnGeometry(true);
+		System.out.println(" query " + query.getWhere());
+		try { 
+			FeatureResult queryResult = queryTask.execute(query);
+			System.out.println("queryResult "+queryResult);
+			if (queryResult.featureCount() != 1) {
+				System.out.println("Error! There should be exactly 1 record per state.");
+				return;
+			}
+			Feature feature = (Feature) queryResult.iterator().next();
+			Map<String, Object> hasResultado = feature.getAttributes();
+			for (int i = 0; i < hasResultado.size(); i++) {
+				//LayerInfo layerInfo = (LayerInfo) listaLayers.values().toArray()[i];
+				System.out.println("nameCampo: " + hasResultado.keySet().toArray()[i] +" dato: "+ hasResultado.values().toArray()[i]);
+//				String nameCampo = (String) hasResultado.keySet().toArray()[i];
+//				String dato = (String) hasResultado.values().toArray()[i]; 
+//				System.out.println("nameCampo: " + nameCampo +" dato: "+ dato);
+			}
+			
+		} catch (Exception e1) {
+			System.out.println(" error query " + e1);
+		} 
+		
 	}
 	
 }
