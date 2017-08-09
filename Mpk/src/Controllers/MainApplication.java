@@ -103,8 +103,6 @@ public class MainApplication {
 		btnIdentify.setEnabled(false);
 		btnIdentify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				Identify identify = new Identify(map);
-//				identify.setVisible(true);
 				crearMapa.agregarEvento(map);
 			}
 		});

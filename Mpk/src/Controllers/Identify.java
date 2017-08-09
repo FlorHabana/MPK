@@ -1,7 +1,6 @@
 package Controllers;
 
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -9,163 +8,274 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
+import com.esri.client.local.ArcGISLocalFeatureLayer;
+import com.esri.core.geometry.Polygon;
+import com.esri.core.map.CallbackListener;
+import com.esri.core.map.Feature;
+import com.esri.core.map.FeatureResult;
+import com.esri.core.map.Field;
+import com.esri.core.map.Graphic;
+import com.esri.core.tasks.query.QueryParameters;
+import com.esri.core.tasks.query.QueryTask;
+import com.esri.map.GroupLayer;
 import com.esri.map.JMap;
-import com.esri.toolkit.JLayerTree;
+import com.esri.map.Layer;
 import com.esri.toolkit.legend.JLegend;
 
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import java.awt.Color;
-import java.awt.SystemColor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import javax.swing.JTextField;
+import java.util.Map;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
-import java.awt.FlowLayout;
+
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.ListSelectionModel;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.SoftBevelBorder;
 
 public class Identify extends JFrame {
 	MostrarCapas mostrarCapas = new MostrarCapas();
 	
 	private JPanel contentPane;
+	@SuppressWarnings("rawtypes")
 	JComboBox CmbCapas = new JComboBox();
-	private BorderLayout bl_panel_infoCapas = new BorderLayout();
-	JPanel panel_infoCapas = new JPanel(bl_panel_infoCapas);
 	JPanel panel = new JPanel();
-
+	JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+	private final JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
+	private final JTable table = new JTable();
+	private final JPanel panel_1 = new JPanel();
+	private final JPanel panel_2 = new JPanel();
 	/**
 	 * Create the frame.
 	 */
+	@SuppressWarnings({ "unchecked", "serial" })
 	public Identify(final JMap map) {
-		setBounds(100, 100, 400, 550);
+		setResizable(false);
+		setBounds(100, 100, 548, 548);
 		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 		setLocationRelativeTo(null);
-		setResizable(false);
-		
-		contentPane.add(panel, BorderLayout.NORTH);
-		GridBagLayout gbl_panel = new GridBagLayout();
-		gbl_panel.columnWidths = new int[]{0, 0, 0};
-		gbl_panel.rowHeights = new int[]{0, 0, 0, 5, 10, 0};
-		gbl_panel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-		gbl_panel.rowWeights = new double[]{1.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
-		panel.setLayout(gbl_panel);
 		
 		JLabel lblIdentify = new JLabel("Identificar de : ");
-		GridBagConstraints gbc_lblIdentify = new GridBagConstraints();
-		gbc_lblIdentify.anchor = GridBagConstraints.EAST;
-		gbc_lblIdentify.insets = new Insets(0, 0, 5, 5);
-		gbc_lblIdentify.gridx = 0;
-		gbc_lblIdentify.gridy = 1;
-		panel.add(lblIdentify, gbc_lblIdentify);
 		
 		CmbCapas.setBackground(Color.WHITE);
-		GridBagConstraints gbc_CmbCapas = new GridBagConstraints();
-		gbc_CmbCapas.insets = new Insets(0, 0, 5, 0);
-		gbc_CmbCapas.fill = GridBagConstraints.HORIZONTAL;
-		gbc_CmbCapas.gridx = 1;
-		gbc_CmbCapas.gridy = 1;
+		CmbCapas.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				obtenerFeatureSeleccionados(map);
+			}
+		});
 		for(String name : mostrarCapas.llenarCombo(map)){
 			CmbCapas.addItem(name);
 		}
 		
-		CmbCapas.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				llenarLista(map);
+		tabbedPane.setBackground(Color.WHITE);
+		tabbedPane_2.setBackground(Color.WHITE);
+		
+		tabbedPane.addTab("New tab", null, tabbedPane_2, null);
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.setModel(new DefaultTableModel(
+			new Object[][] {
+				{null, null},
+				{"id", "123"},
+			},
+			new String[] {
+				"Campo", "Dato"
+			}
+		) {
+			@SuppressWarnings("rawtypes")
+			Class[] columnTypes = new Class[] {
+				String.class, String.class
+			};
+			@SuppressWarnings("rawtypes")
+			public Class getColumnClass(int columnIndex) {
+				return columnTypes[columnIndex];
 			}
 		});
-		panel.add(CmbCapas, gbc_CmbCapas);
+		table.setColumnSelectionAllowed(true);
+		table.setCellSelectionEnabled(true);
+		table.setBorder(new LineBorder(new Color(30, 144, 255), 1, true));
 		
-		panel_infoCapas.setBackground(Color.WHITE);
-		GridBagConstraints gbc_panel_infoCapas = new GridBagConstraints();
-		gbc_panel_infoCapas.gridwidth = 2;
-		gbc_panel_infoCapas.insets = new Insets(0, 0, 5, 5);
-		gbc_panel_infoCapas.fill = GridBagConstraints.BOTH;
-		gbc_panel_infoCapas.gridx = 0;
-		gbc_panel_infoCapas.gridy = 3;
-		panel.add(panel_infoCapas, gbc_panel_infoCapas);
-		
-		JPanel panel_1 = new JPanel();
-		panel_1.setBackground(SystemColor.control);
-		contentPane.add(panel_1, BorderLayout.CENTER);
-		GridBagLayout gbl_panel_1 = new GridBagLayout();
-		gbl_panel_1.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 40, 30, 0};
-		gbl_panel_1.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_panel_1.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-		gbl_panel_1.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		panel_1.setLayout(gbl_panel_1);
-		
-		JLabel lblEtiqueta = new JLabel("Ubicaci\u00F3n : ");
-		lblEtiqueta.setHorizontalAlignment(SwingConstants.LEFT);
-		GridBagConstraints gbc_lblEtiqueta = new GridBagConstraints();
-		gbc_lblEtiqueta.insets = new Insets(0, 0, 5, 5);
-		gbc_lblEtiqueta.gridx = 1;
-		gbc_lblEtiqueta.gridy = 1;
-		panel_1.add(lblEtiqueta, gbc_lblEtiqueta);
-		
-		JLabel lblLocation = new JLabel("New label");
-		GridBagConstraints gbc_lblLocation = new GridBagConstraints();
-		gbc_lblLocation.insets = new Insets(0, 0, 5, 5);
-		gbc_lblLocation.gridx = 2;
-		gbc_lblLocation.gridy = 1;
-		panel_1.add(lblLocation, gbc_lblLocation);
-		
-		JLabel lblNewLabel = new JLabel("*");
-		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 0);
-		gbc_lblNewLabel.gridx = 7;
-		gbc_lblNewLabel.gridy = 1;
-		panel_1.add(lblNewLabel, gbc_lblNewLabel);
-		
-		JTextArea txtInfo = new JTextArea();
-		txtInfo.setEditable(false);
-		txtInfo.setColumns(30);
-		GridBagConstraints gbc_txtInfo = new GridBagConstraints();
-		gbc_txtInfo.gridwidth = 7;
-		gbc_txtInfo.gridheight = 7;
-		gbc_txtInfo.insets = new Insets(0, 0, 5, 0);
-		gbc_txtInfo.fill = GridBagConstraints.BOTH;
-		gbc_txtInfo.gridx = 1;
-		gbc_txtInfo.gridy = 2;
-		panel_1.add(txtInfo, gbc_txtInfo);
-		
-		JLabel lblNewLabel_1 = new JLabel("1 Caracter\u00EDstica identificada");
-		lblNewLabel_1.setHorizontalAlignment(SwingConstants.LEFT);
-		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-		gbc_lblNewLabel_1.insets = new Insets(0, 0, 0, 5);
-		gbc_lblNewLabel_1.gridwidth = 2;
-		gbc_lblNewLabel_1.gridx = 1;
-		gbc_lblNewLabel_1.gridy = 9;
-		panel_1.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		tabbedPane_2.addTab("New tab", null, table, null);
+		GroupLayout gl_contentPane = new GroupLayout(contentPane);
+		gl_contentPane.setHorizontalGroup(
+			gl_contentPane.createParallelGroup(Alignment.LEADING)
+				.addComponent(panel, GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)
+				.addGroup(Alignment.TRAILING, gl_contentPane.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(tabbedPane, GroupLayout.DEFAULT_SIZE, 512, Short.MAX_VALUE)
+					.addGap(10))
+		);
+		gl_contentPane.setVerticalGroup(
+			gl_contentPane.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_contentPane.createSequentialGroup()
+					.addComponent(panel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(tabbedPane, GroupLayout.PREFERRED_SIZE, 311, GroupLayout.PREFERRED_SIZE)
+					.addGap(3))
+		);
+		panel.setBackground(Color.WHITE);
+		GroupLayout gl_panel = new GroupLayout(panel);
+		gl_panel.setHorizontalGroup(
+			gl_panel.createParallelGroup(Alignment.LEADING)
+				.addGroup(Alignment.TRAILING, gl_panel.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panel.createParallelGroup(Alignment.TRAILING)
+						.addComponent(panel_1, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 512, Short.MAX_VALUE)
+						.addComponent(panel_2, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE))
+					.addContainerGap())
+		);
+		gl_panel.setVerticalGroup(
+			gl_panel.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel.createSequentialGroup()
+					.addGap(5)
+					.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, 43, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(panel_2, GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))
+		);
+		panel_1.setBackground(Color.WHITE);
+		panel_2.setBackground(Color.WHITE);
+		GroupLayout gl_panel_1 = new GroupLayout(panel_1);
+		gl_panel_1.setHorizontalGroup(
+			gl_panel_1.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_1.createSequentialGroup()
+					.addGap(143)
+					.addComponent(lblIdentify)
+					.addGap(18)
+					.addComponent(CmbCapas, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(170, Short.MAX_VALUE))
+		);
+		gl_panel_1.setVerticalGroup(
+			gl_panel_1.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_1.createSequentialGroup()
+					.addGap(5)
+					.addGroup(gl_panel_1.createParallelGroup(Alignment.BASELINE)
+						.addComponent(CmbCapas, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblIdentify)))
+		);
+		panel_1.setBorder(new BevelBorder(BevelBorder.RAISED, new Color(30, 144, 255), new Color(100, 149, 237), new Color(0, 0, 205), new Color(30, 144, 255)));
+		panel_1.setLayout(gl_panel_1);
+		panel.setLayout(gl_panel);
+		contentPane.setLayout(gl_contentPane);
+		itemSeleccionado(CmbCapas, map);
 	}
 
-	public void llenarLista(final JMap map){
-		mostrarCapas.cleanPanel(panel_infoCapas);
+	public void obtenerFeatureSeleccionados(final JMap map){
+		mostrarCapas.cleanPanel(panel_2);
 		for (int i = 0; i < map.getLayers().size(); i++) {
-			ArcGISLocalDynamicMapServiceLayer layer = (ArcGISLocalDynamicMapServiceLayer) map.getLayers().get(i);
-			for (int j = 0; j < layer.getLayersList().size(); j++) {
-				if(CmbCapas.getSelectedItem().equals(layer.getSubLayer(j).getName())){
-					DefaultMutableTreeNode padre = new DefaultMutableTreeNode(layer.getSubLayer(j).getName());
-					DefaultMutableTreeNode capa = new DefaultMutableTreeNode(layer.getSubLayer(j).getChildLayer(0));
-					padre.add(capa);
-					DefaultTreeModel modelo = new DefaultTreeModel(padre);
-					JTree jTree = new JTree(modelo);
-					jTree.updateUI();
-					JScrollPane sp = new JScrollPane(jTree);
-					sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED); 
-					sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); 
-					sp.updateUI();					
-					panel_infoCapas.add(BorderLayout.NORTH, sp);
-					panel_infoCapas.updateUI();
+			GroupLayer groupLayer = (GroupLayer)  map.getLayers().get(i);
+			Layer[] layer= groupLayer.getLayers();
+			for (int j = 0; j < layer.length; j++) {
+				ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) layer[j];
+				if(CmbCapas.getSelectedItem().equals(arcGISLocalFeatureLayer.getName())){
+					crearTree(arcGISLocalFeatureLayer); 
 				}
+			}
+		}
+	}
+	
+	public void itemSeleccionado (JComboBox jcComboBox, JMap map) {
+		int contador =0;
+		if (jcComboBox.getSelectedItem() != null) {
+			for (int i = 0; i < map.getLayers().size(); i++) {
+				GroupLayer groupLayer = (GroupLayer)  map.getLayers().get(i);
+				Layer[] layer= groupLayer.getLayers();
+				for (int j = 0; j < layer.length; j++) {
+					ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) layer[j];
+					if (contador ==0) {
+						if (arcGISLocalFeatureLayer.getSelectionIDs().length >0) {
+							System.out.println("namelAYER............. "+arcGISLocalFeatureLayer.getName()); 
+							CmbCapas.setSelectedItem(arcGISLocalFeatureLayer.getName()); 
+							contador =1;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public void crearTree (ArcGISLocalFeatureLayer arcGISLocalFeatureLayer) {
+		mostrarCapas.cleanPanel(panel_2);
+		DefaultMutableTreeNode padre = new DefaultMutableTreeNode(arcGISLocalFeatureLayer.getName());
+		Graphic[] graphics =arcGISLocalFeatureLayer.getSelectedFeatures();
+		for (int x=0; x<graphics.length; x++) {
+			Graphic graphic = graphics[x];
+			DefaultMutableTreeNode capa = new DefaultMutableTreeNode(graphic.getUid());
+			padre.add(capa);
+			//obtenerInformacion(arcGISLocalFeatureLayer, graphic.getUid());
+		}
+		DefaultTreeModel modelo = new DefaultTreeModel(padre);
+		JTree jTree = new JTree(modelo);
+		JScrollPane sp = new JScrollPane(jTree);
+		sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED); 
+		sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); 
+		sp.updateUI();
+		sp.setPreferredSize(new Dimension(475, 125));
+		sp.setBorder(new SoftBevelBorder(BevelBorder.RAISED, new Color(30, 144, 255), new Color(100, 149, 237), new Color(0, 0, 205), new Color(30, 144, 255)));
+		System.out.println("panel_2..........  "+panel_2.getWidth() + " heigt "+ panel_2.getHeight());
+		panel_2.add(BorderLayout.NORTH, sp); 
+		panel_2.updateUI();
+	}
+	
+	public void obtenerInformacion (ArcGISLocalFeatureLayer arcGISLocalFeatureLayer, final int id) {
+		Field[] fields = arcGISLocalFeatureLayer.getFields();
+		String Campo="OBJECTID";
+		for (int x=0; x<fields.length; x++) {  
+			Field fiel = fields[x];
+			if (x==0) {
+				Campo =fiel.getName();
+				System.out.println(" x "+x +" "+ fiel.getName() + " id "+id +" url "+arcGISLocalFeatureLayer.getUrl());
+			}
+		}
+		
+		QueryTask queryTask = new QueryTask(arcGISLocalFeatureLayer.getUrl());
+		QueryParameters query = new QueryParameters();
+		query.setReturnGeometry(true);
+		query.setOutFields(new String[] {"*"});
+		query.setWhere(Campo+"="+id  );
+		System.out.println(" query " + query.getWhere());
+		queryTask.execute(query, new CallbackListener<FeatureResult>() {
+			public void onCallback(FeatureResult featureResult) {
+				if (featureResult.featureCount() < 1) {
+					System.err.println("Problem! There are no records returned");
+					return;
+				}
+				mostrarInformacion(featureResult, id);
+				
+			}
+			public void onError(Throwable e) {
+				System.out.println(" e " + e);
+			}
+			
+		});
+	}
+	
+	public void mostrarInformacion (FeatureResult featureResult, int id) {
+		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane_1.setBackground(Color.WHITE);
+		tabbedPane.addTab(""+id, null, tabbedPane_1, null);
+		JTable jaTable = new JTable();
+		for (Object record : featureResult) {
+			Feature feature = (Feature) record; 
+			Polygon polygon = (Polygon) feature.getGeometry();
+			System.out.println(" geometry  " + feature.getGeometry()+ " size "+polygon.getPointCount() +  " pat " +polygon.getPathCount() );
+			for (int i=0; i<polygon.getPointCount(); i++) {
+				System.out.println(" x " +polygon.getPoint(i).getX() +" y "+ polygon.getPoint(i).getY() ); 
+			}
+			Map<String, Object> hasResultado = feature.getAttributes();
+			for (int i = 0; i < hasResultado.size(); i++) {
+				System.out.println("nameCampo: " + hasResultado.keySet().toArray()[i] +" dato: "+ hasResultado.values().toArray()[i]);
 			}
 		}
 	}

@@ -21,9 +21,11 @@ import com.esri.arcgis.system.esriLicenseProductCode;
 import com.esri.arcgis.system.esriLicenseStatus;
 import com.esri.arcgisruntime.localserver.LocalGeoprocessingService.ServiceType;
 import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
+import com.esri.client.local.ArcGISLocalFeatureLayer;
 import com.esri.core.geodatabase.Geodatabase;
 import com.esri.core.io.EsriErrorCode;
 import com.esri.map.ArcGISPopupInfo;
+import com.esri.map.GroupLayer;
 import com.esri.map.JMap;
 import com.esri.map.Layer;
 import com.esri.map.LayerInfo;
@@ -36,15 +38,16 @@ public class MostrarCapas {
 	public String[] llenarCombo(JMap map){
 		String nameLayer="";
 		for (int i = 0; i < map.getLayers().size(); i++) {
-			ArcGISLocalDynamicMapServiceLayer layer = (ArcGISLocalDynamicMapServiceLayer) map.getLayers().get(i);
-			for(LayerInfo layer1 : layer.getLayersList()){
-				nameLayer+= layer1.getName() +"~";
+			GroupLayer groupLayer = (GroupLayer)  map.getLayers().get(i);
+			Layer[] layer= groupLayer.getLayers();
+			for (int j = 0; j < layer.length; j++) {
+				ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) layer[j];
+				nameLayer+= arcGISLocalFeatureLayer.getName() +"~";
 			}
 		}
 		String[] names = nameLayer.split("~");
 		return names;
 	}
-	
 	public void cleanPanel(JPanel panel_infoCapas){
 		for (int i = 0; i < panel_infoCapas.getComponentCount(); i++) {
 			panel_infoCapas.remove(i);

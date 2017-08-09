@@ -65,6 +65,8 @@ import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
 import com.esri.client.local.ArcGISLocalFeatureLayer;
 import com.esri.core.geodatabase.Geodatabase;
 import com.esri.core.geodatabase.GeodatabaseFeatureTable;
+import com.esri.core.geometry.Geometry;
+import com.esri.core.geometry.Polygon;
 import com.esri.core.map.CallbackListener;
 import com.esri.core.map.Feature;
 import com.esri.core.map.FeatureResult;
@@ -80,6 +82,8 @@ import com.esri.map.Layer;
 import com.esri.map.LayerInitializeCompleteEvent;
 import com.esri.map.LayerInitializeCompleteListener;
 import com.esri.map.LayerList;
+import com.esri.map.MapEvent;
+import com.esri.map.MapEventListenerAdapter;
 import com.esri.map.Layer.LayerStatus;
 import com.esri.toolkit.legend.JLegend;
 import com.esri.toolkit.overlays.HitTestEvent;
@@ -99,7 +103,7 @@ public class CrearMapa {
 	HashMap<String, LayerInfo> listaLayers = new HashMap<String, LayerInfo>();
 	static String nuevaURL=System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk"; 
 	com.esri.map.GroupLayer  groupLayer= new com.esri.map.GroupLayer();
-	
+	Identify identify = null;
 	public JComponent crearMapa (final JMap map, JButton button ) {
 		com.esri.client.local.LocalServer.getInstance().initializeAsync();
 		contentPane = createContentPane();
@@ -275,6 +279,13 @@ public class CrearMapa {
 	
 	public void agregarEvento(JMap map) {
 		System.out.println(" prueba " + map.getLayers());
+		if (identify !=null) {
+			System.out.println("isActive "+ identify.isActive() + " visible " + identify.isVisible());
+			if (identify.isVisible()== true ) { 
+				identify.dispose();
+				identify.hide();
+			} 
+		}
 		LayerList listLayers = map.getLayers();
 		if (listaLayers != null) {
 			for (int x= 0; x<listLayers.size(); x++) {
@@ -308,6 +319,8 @@ public class CrearMapa {
 					} else {
 						arcGISFeatureLayer.select((int) feature.getId());
 						arcGISFeatureLayer.setSelectionColor(Color.BLUE);
+						
+						System.out.println("evento de informacion  ");
 						mostrarInformacionFeature (map, arcGISFeatureLayer, (int) feature.getId());
 					}
 				}
@@ -316,43 +329,18 @@ public class CrearMapa {
 		return listener;
 	}
 	
-	public void mostrarInformacionFeature (JMap map, ArcGISLocalFeatureLayer arcGISLocalFeatureLayer, int id) {
-		Field[] fields = arcGISLocalFeatureLayer.getFields();
-		String Campo="OBJECTID";
-		for (int x=0; x<fields.length; x++) {  
-			Field fiel = fields[x];
-			if (x==0) {
-				Campo =fiel.getName();
-				System.out.println(" x "+x +" "+ fiel.getName() + " id "+id +" url "+arcGISLocalFeatureLayer.getUrl());
-			}
+	public void mostrarInformacionFeature (final JMap map, ArcGISLocalFeatureLayer arcGISLocalFeatureLayer, int id) {
+		if (identify == null) { 
+			identify = new Identify(map);
 		}
-		QueryTask queryTask = new QueryTask(arcGISLocalFeatureLayer.getUrl());
-		QueryParameters query = new QueryParameters();
-		query.setOutFields(new String[] {"*"});
-		query.setWhere(Campo+"="+id  );
-		query.setReturnGeometry(true);
-		System.out.println(" query " + query.getWhere());
-		try { 
-			FeatureResult queryResult = queryTask.execute(query);
-			System.out.println("queryResult "+queryResult);
-			if (queryResult.featureCount() != 1) {
-				System.out.println("Error! There should be exactly 1 record per state.");
-				return;
-			}
-			Feature feature = (Feature) queryResult.iterator().next();
-			Map<String, Object> hasResultado = feature.getAttributes();
-			for (int i = 0; i < hasResultado.size(); i++) {
-				//LayerInfo layerInfo = (LayerInfo) listaLayers.values().toArray()[i];
-				System.out.println("nameCampo: " + hasResultado.keySet().toArray()[i] +" dato: "+ hasResultado.values().toArray()[i]);
-//				String nameCampo = (String) hasResultado.keySet().toArray()[i];
-//				String dato = (String) hasResultado.values().toArray()[i]; 
-//				System.out.println("nameCampo: " + nameCampo +" dato: "+ dato);
-			}
-			
-		} catch (Exception e1) {
-			System.out.println(" error query " + e1);
-		} 
-		
+		if (identify.isVisible() == false) {
+			identify.setVisible(true);
+			identify.toFront();
+			identify.obtenerFeatureSeleccionados(map);
+		}else {
+			identify.toFront();
+			identify.obtenerFeatureSeleccionados(map);
+		}
 	}
 	
 }
