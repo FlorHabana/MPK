@@ -111,6 +111,7 @@ public class CrearMapa {
 	Identify identify = null;
 	public JComponent crearMapa (final JMap map, JButton button, JPanel PanelLayers ) {
 		com.esri.client.local.LocalServer.getInstance().initializeAsync();
+		
 		contentPane = createContentPane();
 		contentPane.setBackground(Color.BLUE);
 		System.out.println("metodo crear mapa");

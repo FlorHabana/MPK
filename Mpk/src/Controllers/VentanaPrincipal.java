@@ -31,7 +31,7 @@ public class VentanaPrincipal extends JFrame {
     CrearMapa crearMapa=new CrearMapa();
     static AnimationClass animationClass= new AnimationClass();
     static AnimationClass animationClasss= new AnimationClass();
-     JLabel lblImagen1 = new JLabel();
+    
     
     private JMap map = new JMap();
     /**
@@ -60,13 +60,12 @@ public class VentanaPrincipal extends JFrame {
         PanelImagen panelImagen = new PanelImagen();
         getContentPane().add(panelImagen);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         
         JPanel panelSlider= new JPanel();
         panelSlider.setPreferredSize(new Dimension((int) d.getWidth(), 100));
         getContentPane().add(panelSlider, BorderLayout.NORTH);
         
-        
+        JLabel lblImagen1 = new JLabel();
         lblImagen1.setIcon(new ImageIcon(VentanaPrincipal.class.getResource("/img/fondoWorld.png")));
         
         JLabel lblImagen2 = new JLabel("");
@@ -120,8 +119,6 @@ public class VentanaPrincipal extends JFrame {
     }
     
     public static void slideShow(final JLabel lblImagen1, final JLabel lblImagen2){
-    	System.out.println("Entre slideshow");
-//    	lblImagen2.setVisible(false);
     	new Thread(){
     		int count;
     		@Override
@@ -140,7 +137,6 @@ public class VentanaPrincipal extends JFrame {
 								if (lblImagen1.getX() == -1205) {
 									lblImagen1.setBounds(1205, 0, lblImagen1.getWidth(), lblImagen1.getHeight()); 
 									animationClass.jLabelXLeft(1205,-1205, 20, 1, lblImagen1);
-									//count=3;
 								} 
 								if (lblImagen2.getX() == -1206) {
 									lblImagen2.setBounds(1206, 0, lblImagen2.getWidth(), lblImagen2.getHeight()); 
