@@ -19,6 +19,8 @@ import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
@@ -237,6 +239,9 @@ public class CrearMapa {
 	public void dibujarCapas(JMap map, JPanel panelMenuCapas) {
 		JLegend legend = new JLegend(map);
 		legend.setPreferredSize(new Dimension(300, 749));
+		JScrollPane scrollPane= (JScrollPane) legend.getComponent(0);
+		JViewport viewport= scrollPane.getViewport();
+		viewport.getComponent(0).setBackground(new Color(100, 149, 237));
 		legend.setBorder(new LineBorder(new Color(205, 205, 255), 3));
 		panelMenuCapas.add(legend, BorderLayout.WEST);
 	}
