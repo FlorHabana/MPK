@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -51,6 +52,20 @@ public class MostrarCapas {
 	public void cleanPanel(JPanel panel_infoCapas){
 		for (int i = 0; i < panel_infoCapas.getComponentCount(); i++) {
 			panel_infoCapas.remove(i);
+		}
+	}
+	public void cleanTabPanel(JTabbedPane panel_infoCapas){
+		try {
+			if (panel_infoCapas.getComponentCount() != 0) {
+				panel_infoCapas.removeAll(); 
+//				if (panel_infoCapas.getComponentCount() != 0) {
+//					for (int i = 0; i < panel_infoCapas.getComponentCount(); i++) {
+//						panel_infoCapas.remove(i);
+//					}
+//				}
+			}
+		} catch (Exception e) {
+			System.err.println(" cleanTabPanel "+ e);
 		}
 	}
 	

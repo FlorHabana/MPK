@@ -41,6 +41,7 @@ public class MainApplication {
 	String url="";
 	CrearMapa crearMapa = new CrearMapa();
 	JComponent jComponent =null;
+	JPanel PanelLayers = new JPanel();
 	/**
 	 * Launch the application.
 	 */
@@ -114,7 +115,11 @@ public class MainApplication {
 		gbc_btnIdentify.gridy = 1;
 		PanelButtons.add(btnIdentify, gbc_btnIdentify);
 		
-		JPanel PanelLayers = new JPanel();
+		
+		PanelLayers.setBackground(new Color(240, 248, 255));
+		frmMpk.getContentPane().add(PanelLayers, BorderLayout.WEST);
+		PanelLayers.setPreferredSize(new Dimension(300, 660));
+		PanelLayers.setLayout(new BorderLayout(0, 0));
 		
 		frmMpk.getContentPane().add(PanelLayers, BorderLayout.WEST);
 //		btnAddData.addActionListener(new ActionListener() {
@@ -123,7 +128,7 @@ public class MainApplication {
 //				frmMpk.getContentPane().add(crearMapa.crearMapa(map, url));
 //			}
 //		});
-		jComponent =crearMapa.crearMapa(map, btnIdentify);
+		jComponent =crearMapa.crearMapa(map, btnIdentify, PanelLayers);
 		frmMpk.getContentPane().add(jComponent);
 		frmMpk.addWindowListener(new WindowAdapter() {
 	      @Override
@@ -149,13 +154,7 @@ public class MainApplication {
 				System.out.println("componente "+jComponent.getComponentCount());
 			}
 		});
-		
-		
-		PanelLayers.setBackground(new Color(240, 248, 255));
-		frmMpk.getContentPane().add(PanelLayers, BorderLayout.WEST);
-		PanelLayers.setPreferredSize(new Dimension(300, 660));
-		PanelLayers.setLayout(new BorderLayout(0, 0));
-		crearMapa.dibujarCapas(map, PanelLayers); 
+		//crearMapa.dibujarCapas(map, PanelLayers); 
 	}
 
 }

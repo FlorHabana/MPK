@@ -4,6 +4,7 @@ import AppPackage.AnimationClass;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,6 +30,7 @@ public class VentanaPrincipal extends JFrame {
     static VentanaPrincipal frame = new VentanaPrincipal();
     CrearMapa crearMapa=new CrearMapa();
     static AnimationClass animationClass= new AnimationClass();
+    static AnimationClass animationClasss= new AnimationClass();
      JLabel lblImagen1 = new JLabel();
     
     private JMap map = new JMap();
@@ -73,18 +75,19 @@ public class VentanaPrincipal extends JFrame {
         gl_panelSlider.setHorizontalGroup(
         	gl_panelSlider.createParallelGroup(Alignment.LEADING)
         		.addGroup(gl_panelSlider.createSequentialGroup()
-        			.addComponent(lblImagen1)
+        			.addGap(0, 0, Short.MAX_VALUE)
+        			.addComponent(lblImagen1, GroupLayout.PREFERRED_SIZE, 1200, GroupLayout.PREFERRED_SIZE)
         			.addPreferredGap(ComponentPlacement.RELATED)
         			.addComponent(lblImagen2)
-        			.addContainerGap(758, Short.MAX_VALUE))
+        			.addGap(1232))
         );
         gl_panelSlider.setVerticalGroup(
         	gl_panelSlider.createParallelGroup(Alignment.LEADING)
         		.addGroup(gl_panelSlider.createSequentialGroup()
-        			.addGroup(gl_panelSlider.createParallelGroup(Alignment.LEADING)
+        			.addGroup(gl_panelSlider.createParallelGroup(Alignment.LEADING, false)
         				.addComponent(lblImagen1, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
         				.addComponent(lblImagen2))
-        			.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        			.addGap(0))
         );
         panelSlider.setLayout(gl_panelSlider);
         
@@ -128,17 +131,23 @@ public class VentanaPrincipal extends JFrame {
 						switch (count) {
 						case 0:
 							Thread.sleep(20);
-							animationClass.jLabelXLeft(-1200,0, 20, 1, lblImagen1);
-							animationClass.jLabelXLeft(1200,0, 20, 1, lblImagen2);
-							System.out.println("Caso 0");
+							animationClass.jLabelXLeft(0,-1205, 20, 1, lblImagen1);
 							count=1;
 							break;
 						case 1:
-							Thread.sleep(5);
-							animationClass.jLabelXLeft(0, -1200, 20, 1, lblImagen1);
-							animationClass.jLabelXLeft(0, 1200, 20, 1, lblImagen2);
-							System.out.println("Caso 1");
-							count=0;
+							Thread.sleep(20);
+							if (lblImagen1.getX() < 0) {
+								if (lblImagen1.getX() == -1205) {
+									lblImagen1.setBounds(1205, 0, lblImagen1.getWidth(), lblImagen1.getHeight()); 
+									animationClass.jLabelXLeft(1205,-1205, 20, 1, lblImagen1);
+									//count=3;
+								} 
+								if (lblImagen2.getX() == -1206) {
+									lblImagen2.setBounds(1206, 0, lblImagen2.getWidth(), lblImagen2.getHeight()); 
+								}
+								animationClasss.jLabelXLeft(1206,-1206, 20, 1, lblImagen2);
+							}
+							count=1;
 							break;
 						default:
 							break;
