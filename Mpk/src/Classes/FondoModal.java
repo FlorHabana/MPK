@@ -10,9 +10,14 @@ import Controllers.MainApplication;
 import Controllers.VentanaPrincipal;
 
 public class FondoModal extends JPanel{
-	public void paintComponent(Graphics g) {
+	public FondoModal() {
+		
+	}
+	public void paintComponent(Graphics g) { 
+		System.out.println(" paint -----------");
 		Dimension tam=getSize();
-		ImageIcon imagen = new ImageIcon(MainApplication.class.getResource("/img/fondoModal.png"));
+		ImageIcon imagen = new ImageIcon(MainApplication.class.getResource("/img/menu2.png"));
+		System.out.println(" width ----- "+ tam.width + " height "+tam.getHeight()); 
 		g.drawImage(imagen.getImage(), 0, 0, tam.width,tam.height,null);
 	}
 }

@@ -39,12 +39,8 @@ public class MostrarCapas {
 	public String[] llenarCombo(JMap map){
 		String nameLayer="";
 		for (int i = 0; i < map.getLayers().size(); i++) {
-			GroupLayer groupLayer = (GroupLayer)  map.getLayers().get(i);
-			Layer[] layer= groupLayer.getLayers();
-			for (int j = 0; j < layer.length; j++) {
-				ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) layer[j];
-				nameLayer+= arcGISLocalFeatureLayer.getName() +"~";
-			}
+			ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) map.getLayers().get(i);
+			nameLayer+= arcGISLocalFeatureLayer.getName() +"~";
 		}
 		String[] names = nameLayer.split("~");
 		return names;
