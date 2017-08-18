@@ -1,14 +1,8 @@
 package Controllers;
 
-import java.awt.BorderLayout;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 
-import com.esri.arcgisruntime.internal.jni.ex;
 import com.esri.client.local.ArcGISLocalFeatureLayer;
 import com.esri.core.geometry.Polygon;
 import com.esri.core.map.CallbackListener;
@@ -18,13 +12,8 @@ import com.esri.core.map.Field;
 import com.esri.core.map.Graphic;
 import com.esri.core.tasks.query.QueryParameters;
 import com.esri.core.tasks.query.QueryTask;
-import com.esri.map.GroupLayer;
 import com.esri.map.JMap;
-import com.esri.map.Layer;
-import com.esri.toolkit.legend.JLegend;
 
-import Classes.FondoModal;
-import Classes.TablaRenderizadorCliente;
 import UpperEssential.UpperEssentialLookAndFeel;
 
 import javax.swing.JLabel;
@@ -34,33 +23,21 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Map;
-import java.util.TimeZone;
 
-import javax.swing.JTree;
-import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.SoftBevelBorder;
-import java.awt.FlowLayout;
-import javax.swing.border.EtchedBorder;
 import java.awt.Toolkit;
 import java.awt.Dialog.ModalExclusionType;
-import java.awt.Window.Type;
-import java.awt.SystemColor;
-import javax.swing.DefaultComboBoxModel;
 
+@SuppressWarnings("serial")
 public class Identify extends JFrame {
 	MostrarCapas mostrarCapas = new MostrarCapas();
 	
@@ -73,7 +50,7 @@ public class Identify extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	@SuppressWarnings({ "unchecked", "serial" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Identify(final JMap map) {
 		getContentPane().setBackground(Color.WHITE);
 		try {
@@ -190,31 +167,33 @@ public class Identify extends JFrame {
 		mostrarCapas.cleanTabPanel(tabbedPane); 
 		tabbedPane.updateUI();
 		for (int i = 0; i < map.getLayers().size(); i++) {
-			ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) map.getLayers().get(i);
-			if (CmbCapas.getSelectedItem() == null) {
-				if (arcGISLocalFeatureLayer.getSelectionIDs().length >0){
-					CmbCapas.setSelectedItem(arcGISLocalFeatureLayer.getName());
-					int existe =0;
-					if (CmbCapas.getItemCount() != 0) {
-						for (int x=0; x<CmbCapas.getItemCount(); x++) {
-							if (CmbCapas.getItemAt(x).equals(arcGISLocalFeatureLayer.getName())) {
-								 existe =1;
-								 break;
+			if(!map.getLayers().get(i).getName().equals("Mapa Base")){
+				ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) map.getLayers().get(i);
+				if (CmbCapas.getSelectedItem() == null) {
+					if (arcGISLocalFeatureLayer.getSelectionIDs().length >0){
+						CmbCapas.setSelectedItem(arcGISLocalFeatureLayer.getName());
+						int existe =0;
+						if (CmbCapas.getItemCount() != 0) {
+							for (int x=0; x<CmbCapas.getItemCount(); x++) {
+								if (CmbCapas.getItemAt(x).equals(arcGISLocalFeatureLayer.getName())) {
+									 existe =1;
+									 break;
+								}
 							}
 						}
-					}
-					if (existe ==0) {
-						CmbCapas.addItem(arcGISLocalFeatureLayer.getName()); 
-						CmbCapas.setSelectedItem(arcGISLocalFeatureLayer.getName());
-					}
-					crearTree(arcGISLocalFeatureLayer); 
-					break;
-				}
-				
-			} else {
-				if(CmbCapas.getSelectedItem().equals(arcGISLocalFeatureLayer.getName())){
-					if (arcGISLocalFeatureLayer.getSelectionIDs().length >0) {
+						if (existe ==0) {
+							CmbCapas.addItem(arcGISLocalFeatureLayer.getName()); 
+							CmbCapas.setSelectedItem(arcGISLocalFeatureLayer.getName());
+						}
 						crearTree(arcGISLocalFeatureLayer); 
+						break;
+					}
+					
+				} else {
+					if(CmbCapas.getSelectedItem().equals(arcGISLocalFeatureLayer.getName())){
+						if (arcGISLocalFeatureLayer.getSelectionIDs().length >0) {
+							crearTree(arcGISLocalFeatureLayer); 
+						}
 					}
 				}
 			}
@@ -259,9 +238,7 @@ public class Identify extends JFrame {
 			System.err.println("crearTree e:  "+e);
 		}
 	}
-	
-	
-	@SuppressWarnings("serial")
+
 	public String mostrarInformacion(Graphic graphic, final JTable table) {
 		Object[][] datosFeature= new Object[][]{};
 		Map<String, Object> listaAtributos = graphic.getAttributes();
@@ -343,7 +320,6 @@ public class Identify extends JFrame {
 		});
 	}
 	
-	@SuppressWarnings("serial")
 	public void mostrarInformacion (FeatureResult featureResult, int id, JTable table) {
 		//System.out.println(" mostrarInformacion .............");
 		Object[][] datosFeature= new Object[][]{};
@@ -390,7 +366,6 @@ public class Identify extends JFrame {
 	}
 	
 	
-	@SuppressWarnings("serial")
 	public void mostrarMensaje(JTable table) {
 		table.setModel(new DefaultTableModel(
 				new Object[][]{

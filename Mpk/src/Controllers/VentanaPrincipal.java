@@ -104,12 +104,14 @@ public class VentanaPrincipal extends JFrame {
         Color color= new Color(0f, 0f, 0f, 0f);
         
         JButton btnDeleteData = new JButton("");
+        btnDeleteData.setToolTipText("Borrar");
         btnDeleteData.setIcon(new ImageIcon(VentanaPrincipal.class.getResource("/img/garbage.png")));
         btnDeleteData.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(color, 1), BorderFactory.createLineBorder(color,2)));
         btnDeleteData.setBackground(color);
         panel.add(btnDeleteData);
 
         JButton btnIdentify = new JButton("");
+        btnIdentify.setToolTipText("informaci\u00F3n");
         btnIdentify.setIcon(new ImageIcon(VentanaPrincipal.class.getResource("/img/info24.png")));
         btnIdentify.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(color, 1), BorderFactory.createLineBorder(color,2)));
         btnIdentify.setBackground(color);

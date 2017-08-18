@@ -1,8 +1,7 @@
 package Controllers;
 
 import AppPackage.AnimationClass;
-import Classes.FondoModal;
-import UpperEssential.UpperEssentialLookAndFeel;
+import Classes.*;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -10,45 +9,31 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
 
 import com.esri.map.JMap;
 
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
 import javax.swing.ImageIcon;
-import com.esri.arcgis.beans.symbology.SymbologyBean;
-import javax.swing.border.LineBorder;
-import com.esri.arcgis.beans.toolbar.ToolbarBean;
-import com.esri.arcgis.geodatabase.Workspace;
-import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
+import com.esri.core.geometry.Envelope;
+import com.esri.core.geometry.SpatialReference;
+
 import java.awt.Toolkit;
-import javax.swing.border.BevelBorder;
-import java.awt.CardLayout;
-import javax.swing.JComboBox;
-import java.awt.FlowLayout;
+
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 public class MainApplication {
-
-	private JFrame frmMpk;
-	private JMap map = new JMap();
+	private JFrame frmMpk;											
+	private JMap map = new JMap(SpatialReference.create(4487), new Envelope(-1552371.371, 3190607.429, 1854324.469, 2106675.361));
 	String url="";
 	CrearMapa crearMapa = new CrearMapa();
 	JComponent jComponent =null;
@@ -56,6 +41,14 @@ public class MainApplication {
 	FondoModal fondoModal = new FondoModal();
 	static AnimationClass animationClass= new AnimationClass();
     static AnimationClass animationClasss= new AnimationClass();
+    
+    MyComboBox myComboBox;
+    ImageIcon[] imgBaseLayer={new ImageIcon(MainApplication.class.getResource("/img/Imagery.jpg")),
+    		new ImageIcon(MainApplication.class.getResource("/img/Physical.jpg")),
+    		new ImageIcon(MainApplication.class.getResource("/img/ShadedRelief.jpg")),
+    		new ImageIcon(MainApplication.class.getResource("/img/Street.jpg")),
+    		new ImageIcon(MainApplication.class.getResource("/img/TerrainBase.jpg")),
+    		new ImageIcon(MainApplication.class.getResource("/img/Topographic.jpg"))};
     
 	/**
 	 * Launch the application.
@@ -84,6 +77,7 @@ public class MainApplication {
 	/**
 	 * Initialize the contents of the frame.
 	 */
+	@SuppressWarnings("unchecked")
 	private void initialize() {
 		frmMpk = new JFrame();
 		frmMpk.getContentPane().setBackground(Color.WHITE);
@@ -150,17 +144,12 @@ public class MainApplication {
 		//btnBtneliminar.setToolTipText("Borrar Archivo");
 		btnBtneliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				System.out.println("Borrar "+jComponent.getComponentCount());
-				map.getLayers().clear();
-				int num = jComponent.getComponentCount();
-				while(num != 0){
-					System.out.println("antes num : " +jComponent.getComponentCount());
-					jComponent.remove(jComponent.getComponent(num-1));
-					System.out.println("despues num : " +jComponent.getComponentCount());
-					num--;
+				while (map.getLayers().size()!=1) {
+					if(!map.getLayers().get(map.getLayers().size()-1).getName().equals("Mapa Base")){
+						map.getLayers().remove(map.getLayers().get(map.getLayers().size()-1));
+					}
 				}
-				jComponent.repaint();
-				System.out.println("componente "+jComponent.getComponentCount());
+				map.setExtent(new Envelope(-1552371.371, 3190607.429, 1854324.469, 2106675.361));
 			}
 		});
 		btnBtneliminar.setIcon(new ImageIcon(MainApplication.class.getResource("/img/garbage.png")));
@@ -175,6 +164,19 @@ public class MainApplication {
 //		btnBtninformacion.setBackground(Color.WHITE);
 		btnBtninformacion.setEnabled(false);
 		btnBtninformacion.setIcon(new ImageIcon(MainApplication.class.getResource("/img/info24.png")));
+		
+		myComboBox= new MyComboBox(imgBaseLayer.length);
+		RenderComboBox renderComboBox= new RenderComboBox(imgBaseLayer);
+		myComboBox.setRenderer(renderComboBox);
+		myComboBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				crearMapa.eventChangeBaseLayer(myComboBox, map);
+				map.repaint();
+				jComponent.repaint();
+				jComponent.updateUI();
+			}
+		});
+		
 //		btnBtninformacion.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(Color.white, 1), BorderFactory.createLineBorder(Color.white,2)));
 		
 		GroupLayout gl_panel = new GroupLayout(panel);
@@ -185,15 +187,18 @@ public class MainApplication {
 					.addComponent(btnBtneliminar)
 					.addGap(18)
 					.addComponent(btnBtninformacion)
-					.addContainerGap(587, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(myComboBox, GroupLayout.PREFERRED_SIZE, 202, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(378, Short.MAX_VALUE))
 		);
 		gl_panel.setVerticalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addComponent(btnBtneliminar)
-						.addComponent(btnBtninformacion))
+					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(myComboBox, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(btnBtneliminar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(btnBtninformacion, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 					.addContainerGap(17, Short.MAX_VALUE))
 		);
 		panel.setLayout(gl_panel);

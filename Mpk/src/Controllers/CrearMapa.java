@@ -3,29 +3,18 @@ package Controllers;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
@@ -36,49 +25,11 @@ import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
-import com.esri.arcgis.carto.ILayer;
-import com.esri.arcgis.carto.MapServer;
 import com.esri.arcgis.carto.TopologyLayer;
-import com.esri.arcgis.datasourcesGDB.AccessWorkspaceFactory;
-import com.esri.arcgis.datasourcesGDB.FileGDBScratchWorkspaceFactory;
 import com.esri.arcgis.datasourcesGDB.FileGDBWorkspaceFactory;
-import com.esri.arcgis.datasourcesGDB.SdeWorkspaceFactory;
-import com.esri.arcgis.display.IDisplay;
-import com.esri.arcgis.enginecore.PackageFile;
-import com.esri.arcgis.geodatabase.FeatureClass;
-import com.esri.arcgis.geodatabase.IDataset;
-import com.esri.arcgis.geodatabase.IDatasetName;
-import com.esri.arcgis.geodatabase.IEnumDataset;
-import com.esri.arcgis.geodatabase.IEnumDatasetName;
-import com.esri.arcgis.geodatabase.IEnumDatasetProxy;
-import com.esri.arcgis.geodatabase.IFeatureClass;
-import com.esri.arcgis.geodatabase.IFeatureWorkspace;
-import com.esri.arcgis.geodatabase.ITopology;
-import com.esri.arcgis.geodatabase.IWorkspace;
 import com.esri.arcgis.geodatabase.IWorkspaceFactory;
-import com.esri.arcgis.geodatabase.IWorkspaceName;
-import com.esri.arcgis.geodatabase.Topology;
-import com.esri.arcgis.geodatabase.TopologyErrorFeature;
-import com.esri.arcgis.geodatabase.Workspace;
-import com.esri.arcgis.geodatabase.WorkspaceFactory;
-import com.esri.arcgis.geodatabase.esriDatasetType;
-import com.esri.arcgis.geoprocessing.GPTool;
-import com.esri.arcgis.geoprocessing.GeoProcessor;
-import com.esri.arcgis.geoprocessing.IGeoProcessorResult;
-import com.esri.arcgis.geoprocessing.tools.datamanagementtools.ExtractPackage;
-import com.esri.arcgis.geoprocessing.tools.datamanagementtools.PackageMap;
 import com.esri.arcgis.geoprocessing.tools.datamanagementtools.UncompressFileGeodatabaseData;
-import com.esri.arcgis.interop.AutomationException;
-import com.esri.arcgis.system.AoInitialize;
 import com.esri.arcgis.system.EngineInitializer;
-import com.esri.arcgis.system.IFileNames;
-import com.esri.arcgis.system.IName;
-import com.esri.arcgis.system.IPropertySet;
-import com.esri.arcgis.system.ITrackCancel;
-import com.esri.arcgis.system.IUID;
-import com.esri.arcgis.system.PropertySet;
-import com.esri.arcgisruntime.localserver.LocalServer;
-import com.esri.client.local.ArcGISLocalDynamicMapServiceLayer;
 import com.esri.client.local.ArcGISLocalFeatureLayer;
 import com.esri.client.local.LayerDetails;
 import com.esri.client.local.LocalMapService;
@@ -87,36 +38,23 @@ import com.esri.client.local.LocalServiceStartCompleteListener;
 import com.esri.client.local.LocalServiceStatus;
 import com.esri.core.ags.LayerServiceInfo;
 import com.esri.core.ags.MapServiceInfo;
-import com.esri.core.geodatabase.Geodatabase;
-import com.esri.core.geodatabase.GeodatabaseFeatureTable;
-import com.esri.core.geometry.Geometry;
+import com.esri.core.geometry.Envelope;
 import com.esri.core.geometry.Line;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Segment;
-import com.esri.core.map.CallbackListener;
 import com.esri.core.map.Feature;
-import com.esri.core.map.FeatureResult;
-import com.esri.core.map.Field;
 import com.esri.core.map.Graphic;
-import com.esri.core.symbol.SimpleFillSymbol;
 import com.esri.core.symbol.SimpleLineSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol.Style;
-import com.esri.core.tasks.query.QueryParameters;
-import com.esri.core.tasks.query.QueryTask;
-import com.esri.map.ArcGISFeatureLayer;
-import com.esri.map.FeatureLayer;
-import com.esri.map.GraphicsLayer;
+import com.esri.map.ArcGISDynamicMapServiceLayer;
 import com.esri.map.GroupLayer;
 import com.esri.map.JMap;
-import com.esri.map.Layer;
 import com.esri.map.LayerInitializeCompleteEvent;
 import com.esri.map.LayerInitializeCompleteListener;
 import com.esri.map.LayerList;
-import com.esri.map.MapEvent;
-import com.esri.map.MapEventListenerAdapter;
 import com.esri.map.Layer.LayerStatus;
 import com.esri.toolkit.legend.JLegend;
 import com.esri.toolkit.overlays.HitTestEvent;
@@ -124,62 +62,80 @@ import com.esri.toolkit.overlays.HitTestListener;
 import com.esri.toolkit.overlays.HitTestOverlay;
 
 import Classes.FileDrop;
+import Classes.MyComboBox;
 
 import com.esri.map.LayerInfo;
 
 public class CrearMapa {
 
-	private JProgressBar progressBar;
-	private boolean isTiledLayerInitialized = false;
-	private boolean isDynamicLayerInitialized = false;
+	private static JProgressBar progressBar;
+//	private boolean isTiledLayerInitialized = false;
+	private static boolean isDynamicLayerInitialized = false;
 	private JComponent contentPane;
 	HashMap<String, LayerInfo> listaLayers = new HashMap<String, LayerInfo>();
-	static String nuevaURL=System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk"; 
+	static String nuevaURL;//=System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk"; 
 	com.esri.map.GroupLayer  groupLayer= new com.esri.map.GroupLayer();
 	Identify identify = null;
+	boolean flag=false;
+	
 	public JComponent crearMapa (final JMap map, final JButton button, final JPanel PanelLayers ) {
 		com.esri.client.local.LocalServer.getInstance().initializeAsync();
-		
 		contentPane = createContentPane();
 		contentPane.setBackground(Color.BLUE);
 		System.out.println("metodo crear mapa");
-		 new FileDrop( System.out, contentPane, new FileDrop.Listener()
-	        {
-			 public void filesDropped( java.io.File[] files )
-	            {  
-				 System.out.println("Entré al evento");
-				 for( int i = 0; i < files.length; i++ )
-	                {   try
-	                    { 
-	                	nuevaURL=  files[i].getCanonicalPath() +"" ;
-	                	 System.out.println("nueva "+ nuevaURL);
-		             		if (!nuevaURL.equals("")) {
-		             			progressBar = createProgressBar(contentPane);
-		             			createMap(map, nuevaURL, button, PanelLayers); 
-		             			contentPane.add(progressBar); 
-		             			contentPane.add(map);
-		             		} else {  
-		             			JOptionPane.showMessageDialog(contentPane, "Arrastre archivo.");
-		             		}
-	                    }   // end try
-	                    catch( java.io.IOException e ) {
-	                    	System.out.println("e "+e.getMessage());
-	                    }
-	                }   // end for: through each dropped file
-	            }   // end filesDropped
-	        });
-		 
-		progressBar = createProgressBar(contentPane);
-		//createMap(map, nuevaURL, button, PanelLayers);
-		contentPane.add(progressBar);
-		//contentPane.add(map);
+		System.out.println("flag : "+flag);
+		new FileDrop( System.out, contentPane, new FileDrop.Listener(){
+			public void filesDropped( java.io.File[] files ){  
+				System.out.println("Ha entrado al evento");
+				flag=true;
+				for( int i = 0; i < files.length; i++ ){   
+					try{ 
+						nuevaURL=  files[i].getCanonicalPath() +"" ;
+						System.out.println("nueva "+ nuevaURL);
+						if (!nuevaURL.equals("")) {
+//							progressBar = createProgressBar(contentPane);
+							createMap(map, nuevaURL, button, PanelLayers); 
+//							contentPane.add(progressBar); 
+//							contentPane.add(map);
+						} else {  
+							JOptionPane.showMessageDialog(contentPane, "Arrastre archivo.");
+						}
+					}   // end try
+					catch( java.io.IOException e ) {
+						System.out.println("e "+e.getMessage());
+					}
+				}   // end for: through each dropped file
+			}   // end filesDropped
+		});
+		if(flag==false){
+			System.out.println("if");
+			progressBar = createProgressBar(contentPane);
+			createBaseLayer(map);
+//			createMap(map, nuevaURL, button, PanelLayers);
+			contentPane.add(progressBar); 
+			contentPane.add(map);
+		}
 		return contentPane;
+	}
+	
+	public JMap createBaseLayer(JMap map){
+		updateProgresBarUI("Iniciando servicio de mapa.", true);
+		final ArcGISDynamicMapServiceLayer bl=new ArcGISDynamicMapServiceLayer(
+				"https://services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer");
+		bl.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
+			public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
+				isDynamicLayerInitialized = false;
+				updateProgresBarUI(null, isDynamicLayerInitialized );
+			}
+		});
+		bl.setName("Mapa Base");
+		map.getLayers().add(bl);
+		return map;
 	}
 
 	private void createMap(final JMap map, final String url, final JButton button, final JPanel PanelLayers) { 
-		updateProgresBarUI("Iniciando mapa.", true);
-		
-		final LocalMapService localMapService = new LocalMapService(System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk");
+		updateProgresBarUI("Iniciando mapa.", true);//System.getProperty("user.home")+"\\Documents\\ArcGIS\\Untitled.mpk"
+		final LocalMapService localMapService = new LocalMapService(url);
 		localMapService.setEnableDynamicLayers(true);
 		localMapService.startAsync();
 		localMapService.addLocalServiceStartCompleteListener(new LocalServiceStartCompleteListener() {
@@ -187,7 +143,9 @@ public class CrearMapa {
 				if (localMapService.getStatus() == LocalServiceStatus.STARTED) {
 					for (LayerDetails layerDetails : localMapService.getMapLayers()) {
 						final ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = new ArcGISLocalFeatureLayer(url+"\\", layerDetails.getId());
-						map.getLayers().add(arcGISLocalFeatureLayer); 
+						final Envelope extent = localMapService.getMapServiceInfo().getInitialExtent();
+						map.getLayers().add(arcGISLocalFeatureLayer);
+						map.setExtent(extent);
 						arcGISLocalFeatureLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
 							@SuppressWarnings("static-access")
 							public void layerInitializeComplete(LayerInitializeCompleteEvent e) { 
@@ -222,7 +180,6 @@ public class CrearMapa {
 					System.out.println(" isDynamicLayerInitialized "+isDynamicLayerInitialized);
 					updateProgresBarUI(null, isDynamicLayerInitialized );
 				} 
-				
 			}
 		});
 	}
@@ -248,6 +205,7 @@ public class CrearMapa {
 			TopologyLayer topologyLayer = new TopologyLayer();
 			UncompressFileGeodatabaseData uncompressFileGeodatabaseData = new  UncompressFileGeodatabaseData();
 			uncompressFileGeodatabaseData.setInData(nuevaURL);
+			System.out.println("workspaceFactory : "+workspaceFactory+" topologyLayer : "+topologyLayer);
 			//topologyLayer.draw(ILayer.IID34c20002_4d3c_11d0_92d8_00805f7c28b0, IDisplay.IIDe6bdb002_4d35_11d0_98be_00805f7ced21, ITrackCancel.IID34c20005_4d3c_11d0_92d8_00805f7c28b0);
 			
 			
@@ -269,7 +227,7 @@ public class CrearMapa {
 		panelMenuCapas.add(legend, BorderLayout.WEST);
 	}
 
-	private void updateProgresBarUI(final String str, final boolean visible) {
+	private static void updateProgresBarUI(final String str, final boolean visible) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				if (str != null) {
@@ -315,6 +273,7 @@ public class CrearMapa {
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void agregarEvento(JMap map) {
 		System.out.println(" prueba " + map.getLayers());
 		if (identify !=null) {
@@ -329,10 +288,11 @@ public class CrearMapa {
 		if (listaLayers != null) {
 			ArcGISLocalFeatureLayer arcGISLocalFeatureLayers = null;
 			for (int x= 0; x<listLayers.size(); x++) {
-				ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) listLayers.get(x);
-				arcGISLocalFeatureLayers = arcGISLocalFeatureLayer;
-				System.out.println("arcGISLocalFeatureLayer "+arcGISLocalFeatureLayer.getName());
-				seleccionarPredio(map, arcGISLocalFeatureLayer); 
+				if(!listLayers.get(x).getName().equals("Mapa Base")){
+					ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) listLayers.get(x);
+					arcGISLocalFeatureLayers = arcGISLocalFeatureLayer;
+					seleccionarPredio(map, arcGISLocalFeatureLayer); 
+				}
 			}
 			seleccionarVariosPredios(map, arcGISLocalFeatureLayers);
 		}
@@ -357,6 +317,7 @@ public class CrearMapa {
 	
 	public void seleccionarVariosPredios (final JMap map, final ArcGISLocalFeatureLayer arcGISLocalFeatureLayer) {
 		map.addMouseListener(new MouseAdapter() {
+			@SuppressWarnings("unused")
 			public void mousePressed(MouseEvent event) {
 				inicioArrastre = map.toMapPoint(event.getX(), event.getY());
 				Graphic lineGraphic = new Graphic(inicioArrastre, SYM_POINT);
@@ -438,23 +399,25 @@ public class CrearMapa {
 		LayerList listLayers = map.getLayers();
 		if (listLayers != null) {
 			for (int x= 0; x<listLayers.size(); x++) {
-				ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) listLayers.get(x);
-				if (nameLayer.equals("")) {
-					if ((x+1) ==listLayers.size()) { 
-						arcGISLocalFeatureLayers = arcGISLocalFeatureLayer;		
-					}
-				} else {
-					if (arcGISLocalFeatureLayer.getName().toLowerCase().equals(nameLayer.toLowerCase())) {
-						arcGISLocalFeatureLayers = arcGISLocalFeatureLayer;
-						break;
+				if(!listLayers.get(x).getName().equals("Mapa Base")){
+					ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = (ArcGISLocalFeatureLayer) listLayers.get(x);
+					if (nameLayer.equals("")) {
+						if ((x+1) ==listLayers.size()) { 
+							arcGISLocalFeatureLayers = arcGISLocalFeatureLayer;		
+						}
+					} else {
+						if (arcGISLocalFeatureLayer.getName().toLowerCase().equals(nameLayer.toLowerCase())) {
+							arcGISLocalFeatureLayers = arcGISLocalFeatureLayer;
+							break;
+						}
 					}
 				}
-				
 			}
 		}
 		return arcGISLocalFeatureLayers;
 	}
 	
+	@SuppressWarnings("unused")
 	public void obtenerFeatureSeleccionados (ArcGISLocalFeatureLayer arcGISFeatureLayer, Graphic graphic, int id, JMap map) {
 		Polygon polygonSeleccion = (Polygon) graphic.getGeometry();
 		List<Integer> listaInt = new ArrayList<Integer>();
@@ -535,7 +498,7 @@ public class CrearMapa {
 	}
 	
 	public void seleccionarPredio(JMap map, ArcGISLocalFeatureLayer arcGISFeatureLayer) {
-		LayerList layerList = map.getLayers();
+//		LayerList layerList = map.getLayers();
 		HitTestListener listener = SeleccionarPredio( map);
 		final HitTestOverlay selectionOverlay = new HitTestOverlay(arcGISFeatureLayer, listener);
 		map.addMapOverlay(selectionOverlay);
@@ -593,5 +556,54 @@ public class CrearMapa {
 		}
 	}
 	
+	public String addBaseLayer(int num){
+		String nameBaseLayer ="";
+		String [] arrayBaseLayer={"https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer",
+				"https://services.arcgisonline.com/arcgis/rest/services/World_Physical_Map/MapServer",
+				"https://services.arcgisonline.com/arcgis/rest/services/World_Shaded_Relief/MapServer",
+				"https://services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer",
+				"https://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer",
+				"https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer"};
+		nameBaseLayer= arrayBaseLayer[num];
+		return nameBaseLayer;
+	}
+	
+	public static void changeBaseLayer(JMap map, String nameBaseLayer) {
+		updateProgresBarUI("Iniciando servicio de mapa.", true);
+		ArcGISDynamicMapServiceLayer baselayer=new ArcGISDynamicMapServiceLayer(nameBaseLayer);
+		baselayer.setName("Mapa Base");
+		GroupLayer groupLayer = new GroupLayer();
+		for (int i = 0; i < map.getLayers().size(); i++) {
+			groupLayer.add(map.getLayers().get(i));
+		}
+		try {
+			for (int i = 0; i < groupLayer.size(); i++) {
+				if(!groupLayer.get(i).getName().equals(null)){
+					if(groupLayer.get(i).getName().equals("Mapa Base")){
+						groupLayer.remove(i);
+					}
+				}
+			}
+			map.getLayers().clear();
+			map.getLayers().add(baselayer);
+			for (int i = 0; i < groupLayer.size(); i++) {
+				map.getLayers().add(groupLayer.get(i));
+			}
+			baselayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
+				public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
+					isDynamicLayerInitialized = false;
+					updateProgresBarUI(null, isDynamicLayerInitialized );
+				}
+			});
+		} catch (Exception e) {
+			System.out.println("Exception BaseLayer : "+e.getMessage());
+		}
+	}
+	
+	public void eventChangeBaseLayer(MyComboBox myComboBox, JMap map){
+		System.out.println("Se ha seleccionado un elemento..."+myComboBox.getSelectedItem());
+		String nameBaseLayer=addBaseLayer((Integer) myComboBox.getSelectedItem());
+		changeBaseLayer(map, nameBaseLayer);
+	}
 	
 }
