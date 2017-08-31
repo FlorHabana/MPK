@@ -30,12 +30,16 @@ import com.esri.core.geometry.SpatialReference;
 import java.awt.Toolkit;
 
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.JComboBox;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 
 public class MainApplication {
 	private JFrame frmMpk;											
 	private JMap map = new JMap(SpatialReference.create(4487), new Envelope(-1552371.371, 3190607.429, 1854324.469, 2106675.361));
 	String url="";
 	CrearMapa crearMapa = new CrearMapa();
+	JButton btnInformacion = new JButton("");
 	JComponent jComponent =null;
 	JPanel PanelLayers = new JPanel();
 	FondoModal fondoModal = new FondoModal();
@@ -49,6 +53,17 @@ public class MainApplication {
     		new ImageIcon(MainApplication.class.getResource("/img/Street.jpg")),
     		new ImageIcon(MainApplication.class.getResource("/img/TerrainBase.jpg")),
     		new ImageIcon(MainApplication.class.getResource("/img/Topographic.jpg"))};
+    
+    MyComboBox cmbBuffer;
+    ImageIcon[] imgBuffer={new ImageIcon(MainApplication.class.getResource("/img/buffer1.png")),
+    		new ImageIcon(MainApplication.class.getResource("/com/esri/toolkit/images/EditingLineTool16.png")),
+    		new ImageIcon(MainApplication.class.getResource("/com/esri/toolkit/images/EditingPointTool16.png")),
+    		new ImageIcon(MainApplication.class.getResource("/com/esri/toolkit/images/EditingPolygonTool16.png"))};
+    
+    @SuppressWarnings("rawtypes")
+	JComboBox cmbDistance = new JComboBox();
+    AddJLegend addJLegend= new AddJLegend();
+   
     
 	/**
 	 * Launch the application.
@@ -88,7 +103,8 @@ public class MainApplication {
 		//Dimension d= frmMpk.getSize();
 		
 		JPanel PanelButtons =fondoModal;
-		//PanelButtons.setBorder(new BevelBorder(BevelBorder.RAISED, new Color(30, 144, 255), new Color(100, 149, 237), new Color(30, 144, 255), new Color(100, 149, 237)));
+		//PanelButtons.setBorder(new BevelBorder(BevelBorder.RAISED, new Color(30, 144, 255), new Color(100, 149, 237), 
+//		new Color(30, 144, 255), new Color(100, 149, 237)));
 		//PanelButtons.setBackground(Color.WHITE); 
 		System.out.println("antes de fondo modal ----------------------------- ");
 		frmMpk.getContentPane().add(PanelButtons, BorderLayout.NORTH);
@@ -132,38 +148,41 @@ public class MainApplication {
 		fondoModal.setLayout(null);
 		
 		JPanel panel = new JPanel();
-		//panel.setBorder(new BevelBorder(BevelBorder.LOWERED, new Color(30, 144, 255), new Color(30, 144, 255), new Color(30, 144, 255), new Color(30, 144, 255)));
+		//panel.setBorder(new BevelBorder(BevelBorder.LOWERED, new Color(30, 144, 255), new Color(30, 144, 255), new Color(30, 144, 255), 
+//		new Color(30, 144, 255)));
 		panel.setBounds(0, 0, 1184, 61);
 		panel.setBackground(new Color(0f, 0f, 0f, 0f));
 		panel.setSize(new Dimension(1183, 61));  
 		fondoModal.add(panel); 
 		
 		JButton btnBtneliminar = new JButton("");
-//		btnBtneliminar.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(Color.white, 1), BorderFactory.createLineBorder(Color.white,2)));
-//		btnBtneliminar.setBackground(Color.WHITE);
-		//btnBtneliminar.setToolTipText("Borrar Archivo");
+//		btnBtneliminar.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(Color.white, 1), 
+//		BorderFactory.createLineBorder(Color.white,2)));
 		btnBtneliminar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				while (map.getLayers().size()!=1) {
-					if(!map.getLayers().get(map.getLayers().size()-1).getName().equals("Mapa Base")){
-						map.getLayers().remove(map.getLayers().get(map.getLayers().size()-1));
+					System.out.println("Mapsssssssssss "+map.getLayers());
+					if(!map.getLayers().get(map.getLayers().size()-1).getName().equals(null)){
+						if(!map.getLayers().get(map.getLayers().size()-1).getName().equals("Mapa Base")){
+							map.getLayers().remove(map.getLayers().get(map.getLayers().size()-1));
+						}
 					}
 				}
 				map.setExtent(new Envelope(-1552371.371, 3190607.429, 1854324.469, 2106675.361));
+				map.repaint();
+				map.updateUI();
 			}
 		});
 		btnBtneliminar.setIcon(new ImageIcon(MainApplication.class.getResource("/img/garbage.png")));
 		
-		JButton btnBtninformacion = new JButton("");
-		btnBtninformacion.addActionListener(new ActionListener() {
+		btnInformacion.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				crearMapa.agregarEvento(map);
 			}
 		});
-		//btnBtninformacion.setToolTipText("Informaci\u00F3n");
-//		btnBtninformacion.setBackground(Color.WHITE);
-		btnBtninformacion.setEnabled(false);
-		btnBtninformacion.setIcon(new ImageIcon(MainApplication.class.getResource("/img/info24.png")));
+		
+		btnInformacion.setEnabled(false);
+		btnInformacion.setIcon(new ImageIcon(MainApplication.class.getResource("/img/info24.png")));
 		
 		myComboBox= new MyComboBox(imgBaseLayer.length);
 		RenderComboBox renderComboBox= new RenderComboBox(imgBaseLayer);
@@ -177,29 +196,70 @@ public class MainApplication {
 			}
 		});
 		
-//		btnBtninformacion.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(Color.white, 1), BorderFactory.createLineBorder(Color.white,2)));
 		
+		cmbBuffer = new MyComboBox(imgBuffer.length);
+		RendererComboBuffer rendererComboBuffer= new RendererComboBuffer(imgBuffer);
+		cmbBuffer.setRenderer(rendererComboBuffer);
+		
+		int[] distance={50,100,150,200,250,300,350,400,450,500,550,600,650,700,750,800,850,900,950,1000,1050,1100,
+				1150,1200,1250,1300,1350,1400,1450,1500,1550,1600,1650,1700,1750,1800,1850,1900,1950,2000};
+		
+		for (int i = 0; i < distance.length; i++) {
+			cmbDistance.addItem(distance[i]);
+		}
+		
+		cmbBuffer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				crearMapa.deleteClicked(map);
+				crearMapa.bufferElements(cmbBuffer, map, (Integer) cmbDistance.getSelectedItem());
+			}
+		});
+		
+		final JButton btnSelect = new JButton("");
+		btnSelect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				crearMapa.clearFeaturesSelected(map);
+				crearMapa.removeOverlays(map);
+				crearMapa.deleteClicked(map);
+				crearMapa.removeGraphics();
+			}
+		});
+		btnSelect.setIcon(new ImageIcon(MainApplication.class.getResource("/img/cursor.png")));
+		
+//		btnBtninformacion.setBorder(BorderFactory.createCompoundBorder( BorderFactory.createLineBorder(Color.white, 1), 
+//		BorderFactory.createLineBorder(Color.white,2)));
+
 		GroupLayout gl_panel = new GroupLayout(panel);
 		gl_panel.setHorizontalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel.createSequentialGroup()
-					.addGap(465)
-					.addComponent(btnBtneliminar)
+					.addGap(358)
+					.addComponent(btnSelect)
 					.addGap(18)
-					.addComponent(btnBtninformacion)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(btnBtneliminar)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(btnInformacion, GroupLayout.PREFERRED_SIZE, 47, GroupLayout.PREFERRED_SIZE)
+					.addGap(24)
 					.addComponent(myComboBox, GroupLayout.PREFERRED_SIZE, 202, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(378, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(cmbBuffer, GroupLayout.PREFERRED_SIZE, 97, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(cmbDistance, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(238, Short.MAX_VALUE))
 		);
 		gl_panel.setVerticalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
+			gl_panel.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_panel.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
-						.addComponent(myComboBox, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(btnBtneliminar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(btnBtninformacion, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-					.addContainerGap(17, Short.MAX_VALUE))
+					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+						.addComponent(cmbBuffer, GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
+						.addComponent(myComboBox, GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
+						.addComponent(btnInformacion, 0, 0, Short.MAX_VALUE)
+						.addGroup(gl_panel.createParallelGroup(Alignment.TRAILING, false)
+							.addComponent(btnSelect, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(btnBtneliminar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(cmbDistance, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+					.addGap(17))
 		);
 		panel.setLayout(gl_panel);
 		GroupLayout gl_PanelButtons = new GroupLayout(PanelButtons);
@@ -213,7 +273,7 @@ public class MainApplication {
 		);
 		PanelButtons.setLayout(gl_PanelButtons);
 		
-		jComponent =crearMapa.crearMapa(map, btnBtninformacion, PanelLayers);
+		jComponent =crearMapa.crearMapa(map, btnInformacion, PanelLayers);
 		frmMpk.getContentPane().add(jComponent);
 		frmMpk.addWindowListener(new WindowAdapter() {
 	      @Override
@@ -222,7 +282,13 @@ public class MainApplication {
 	        map.dispose();
 	      }
 	    });
-		crearMapa.dibujarCapas(map, PanelLayers);
+//		crearMapa.dibujarCapas(map, PanelLayers);
+		addJLegend.addElements(map, PanelLayers);
+//		addJLegend.createLegendLayers(map, PanelLayers);
+//		PanelLayers.repaint();
+//		PanelLayers.updateUI();
+		
+//		PanelLayers.add(addJLegend.sliderOpacity(map), BorderLayout.WEST);
 		
 		slideShow(lblImagen1, lblImagen2);
 	}

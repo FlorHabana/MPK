@@ -11,9 +11,8 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
+import javax.swing.CellRendererPane;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -21,6 +20,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
@@ -39,24 +40,30 @@ import com.esri.client.local.LocalServiceStatus;
 import com.esri.core.ags.LayerServiceInfo;
 import com.esri.core.ags.MapServiceInfo;
 import com.esri.core.geometry.Envelope;
+import com.esri.core.geometry.Geometry;
+import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Line;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Segment;
+import com.esri.core.geometry.SpatialReference;
 import com.esri.core.map.Feature;
 import com.esri.core.map.Graphic;
+import com.esri.core.symbol.SimpleFillSymbol;
 import com.esri.core.symbol.SimpleLineSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol;
 import com.esri.core.symbol.SimpleMarkerSymbol.Style;
 import com.esri.map.ArcGISDynamicMapServiceLayer;
 import com.esri.map.GroupLayer;
 import com.esri.map.JMap;
+import com.esri.map.Layer;
 import com.esri.map.LayerInitializeCompleteEvent;
 import com.esri.map.LayerInitializeCompleteListener;
 import com.esri.map.LayerList;
 import com.esri.map.Layer.LayerStatus;
 import com.esri.toolkit.legend.JLegend;
+import com.esri.toolkit.legend.LegendTreeCellRenderer;
 import com.esri.toolkit.overlays.HitTestEvent;
 import com.esri.toolkit.overlays.HitTestListener;
 import com.esri.toolkit.overlays.HitTestOverlay;
@@ -77,41 +84,38 @@ public class CrearMapa {
 	com.esri.map.GroupLayer  groupLayer= new com.esri.map.GroupLayer();
 	Identify identify = null;
 	boolean flag=false;
+	SpatialReference wgs84;
 	
 	public JComponent crearMapa (final JMap map, final JButton button, final JPanel PanelLayers ) {
 		com.esri.client.local.LocalServer.getInstance().initializeAsync();
 		contentPane = createContentPane();
 		contentPane.setBackground(Color.BLUE);
 		System.out.println("metodo crear mapa");
-		System.out.println("flag : "+flag);
 		new FileDrop( System.out, contentPane, new FileDrop.Listener(){
 			public void filesDropped( java.io.File[] files ){  
-				System.out.println("Ha entrado al evento");
+				System.out.println("He entrado al evento");
 				flag=true;
 				for( int i = 0; i < files.length; i++ ){   
 					try{ 
 						nuevaURL=  files[i].getCanonicalPath() +"" ;
 						System.out.println("nueva "+ nuevaURL);
 						if (!nuevaURL.equals("")) {
-//							progressBar = createProgressBar(contentPane);
 							createMap(map, nuevaURL, button, PanelLayers); 
-//							contentPane.add(progressBar); 
 //							contentPane.add(map);
 						} else {  
 							JOptionPane.showMessageDialog(contentPane, "Arrastre archivo.");
 						}
-					}   // end try
+					} 
 					catch( java.io.IOException e ) {
 						System.out.println("e "+e.getMessage());
 					}
-				}   // end for: through each dropped file
-			}   // end filesDropped
+				}
+			} 
 		});
 		if(flag==false){
 			System.out.println("if");
 			progressBar = createProgressBar(contentPane);
 			createBaseLayer(map);
-//			createMap(map, nuevaURL, button, PanelLayers);
 			contentPane.add(progressBar); 
 			contentPane.add(map);
 		}
@@ -140,19 +144,38 @@ public class CrearMapa {
 		localMapService.startAsync();
 		localMapService.addLocalServiceStartCompleteListener(new LocalServiceStartCompleteListener() {
 			public void localServiceStartComplete(LocalServiceStartCompleteEvent e) {
+				System.out.println("status =="+ localMapService.getStatus());
 				if (localMapService.getStatus() == LocalServiceStatus.STARTED) {
+					
+					String wkid = localMapService.getMapServiceInfo().getSpatialReference().getID()+"";
+					String aux_wkid = wkid.substring(wkid.trim().length()-1, wkid.trim().length());
+					System.out.println("spatialReference local : "+wkid +" après couper : "+aux_wkid);
+					
 					for (LayerDetails layerDetails : localMapService.getMapLayers()) {
 						final ArcGISLocalFeatureLayer arcGISLocalFeatureLayer = new ArcGISLocalFeatureLayer(url+"\\", layerDetails.getId());
 						final Envelope extent = localMapService.getMapServiceInfo().getInitialExtent();
-						map.getLayers().add(arcGISLocalFeatureLayer);
-						map.setExtent(extent);
+						
+						if(aux_wkid.equals("4")){
+							map.getLayers().add(arcGISLocalFeatureLayer);
+							map.setExtent(extent);
+						}else{
+							wgs84 = SpatialReference.create(assignSpatialReference(Integer.parseInt(aux_wkid)));
+							Geometry point=extent.getCenter();
+							GeometryEngine.project(point,wgs84, map.getSpatialReference());
+							
+							Point pointProj = (Point) GeometryEngine.project(point, wgs84, map.getSpatialReference());
+						    map.getLayers().add(arcGISLocalFeatureLayer);
+						    map.setExtent(new Envelope((Point)pointProj, 1000000, 1000000));
+						}
+						
 						arcGISLocalFeatureLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
 							@SuppressWarnings("static-access")
 							public void layerInitializeComplete(LayerInitializeCompleteEvent e) { 
 								System.out.println(" url " +arcGISLocalFeatureLayer.getUrl()); 
 								if (arcGISLocalFeatureLayer.getStatus() == LayerStatus.INITIALIZED) {
-									 button.setEnabled(true); 
-									 arcGISLocalFeatureLayer.setVisible(habilitarCapa(localMapService, arcGISLocalFeatureLayer.getName()));
+									System.out.println("if status "+arcGISLocalFeatureLayer.getStatus()); 
+									button.setEnabled(true); 
+									arcGISLocalFeatureLayer.setVisible(habilitarCapa(localMapService, arcGISLocalFeatureLayer.getName()));
 								}else {
 									if (e.getID() == LayerInitializeCompleteEvent.LOCALLAYERCREATE_ERROR) {
 										String errMsg = "Failed to initialize due to " + arcGISLocalFeatureLayer.getInitializationError();
@@ -167,7 +190,6 @@ public class CrearMapa {
 												contador=0;
 											}
 										}
-										//JOptionPane.showMessageDialog(contentPane, error, "", JOptionPane.ERROR_MESSAGE);
 										JOptionPane jOptionPane = new JOptionPane();
 										jOptionPane.showMessageDialog(contentPane, error, "", JOptionPane.ERROR_MESSAGE);
 										jOptionPane.setBackground(Color.WHITE); 
@@ -176,12 +198,100 @@ public class CrearMapa {
 							}
 						});
 					}
+					sortLayers(map);
 					isDynamicLayerInitialized = false;
 					System.out.println(" isDynamicLayerInitialized "+isDynamicLayerInitialized);
 					updateProgresBarUI(null, isDynamicLayerInitialized );
-				} 
+				} else{
+					String errMsg = "Failed to initialize due to " + localMapService.getError();
+					System.out.println(" error " + errMsg);
+					int contador =0;
+					String error ="";
+					for (int i=0; i<errMsg.length(); i++) {
+						contador ++;
+						error =error +errMsg.charAt(i);
+						if (contador ==80) {
+							error =error +"\n";
+							contador=0;
+						}
+					}
+					JOptionPane jOptionPane = new JOptionPane();
+					JOptionPane.showMessageDialog(contentPane, error, "", JOptionPane.ERROR_MESSAGE);
+					jOptionPane.setBackground(Color.WHITE); 
+				}
 			}
 		});
+	}
+	
+	public void sortLayers(JMap map){
+		GroupLayer groupLayer= new GroupLayer();
+		Layer layer=map.getLayers().get(0);
+		for(int i = map.getLayers().size()-1; i > 0; i--){
+			groupLayer.add(map.getLayers().get(i));
+		}
+		map.getLayers().clear();
+		map.getLayers().add(layer);
+		if(map.getLayers().size()==1){
+			for (int i = 0; i < groupLayer.size(); i++) {
+				map.getLayers().add(groupLayer.get(i));
+			}
+		}
+	}
+	
+	public int assignSpatialReference(int wkid){
+		int f_wkid=0;
+		switch (wkid) {
+		case 1:
+			f_wkid=4484;
+			break;
+		case 2:
+			f_wkid=4485;
+			break;
+		case 3:
+			f_wkid=4486;
+			break;
+		case 4:
+			f_wkid=4487;
+			break;
+		case 5:
+			f_wkid=4488;
+			break;
+		case 6:
+			f_wkid=4489;
+			break;
+		default:
+			f_wkid=4487;
+			break;
+		}
+		return f_wkid;
+	}
+	
+	public void mpktest(final JMap map){
+		System.out.println("qqqqqqqqqqqqqqqqqq");
+		final String url=System.getProperty("user.home")+"\\Documents\\ArcGIS\\vec_1k2.mpk";
+		final LocalMapService localMapService=new LocalMapService(url);
+		
+		localMapService.setEnableDynamicLayers(true);
+		localMapService.startAsync();
+		
+//		localMapService.addLocalServiceStartCompleteListener(new LocalServiceStartCompleteListener() {
+//			public void localServiceStartComplete(LocalServiceStartCompleteEvent e) {
+//				System.out.println("urlpppppooo : "+localMapService.getUrlMapService()+" ----  " + localMapService.getStatus());
+//				System.out.println(localMapService.getError());
+//				System.out.println("rrrrrrr");
+//				
+//				final WmsDynamicMapServiceLayer wmServiceLayer = new WmsDynamicMapServiceLayer(url);
+//				System.out.println("wmServiceLayer : "+wmServiceLayer.getUrl());
+//				wmServiceLayer.addLayerInitializeCompleteListener(new LayerInitializeCompleteListener() {
+//					
+//					public void layerInitializeComplete(LayerInitializeCompleteEvent e) {
+//						System.err.println("Inicializando...."+wmServiceLayer.getStatus());
+//						
+//					}
+//				});
+//				
+//			}
+//		});
 	}
 	
 	public boolean habilitarCapa (LocalMapService localMapService, String name) {
@@ -216,14 +326,26 @@ public class CrearMapa {
 
 	}
 	
-	
-	public void dibujarCapas(JMap map, JPanel panelMenuCapas) {
+	public void dibujarCapas(final JMap map, JPanel panelMenuCapas) {
+		final AddJLegend addJLegend=new AddJLegend();
 		JLegend legend = new JLegend(map);
 		legend.setPreferredSize(new Dimension(300, 749));
 		JScrollPane scrollPane= (JScrollPane) legend.getComponent(0);
 		JViewport viewport= scrollPane.getViewport();
 		viewport.getComponent(0).setBackground(new Color(100, 149, 237));
+		JTree jTree= (JTree) viewport.getComponent(0);
+		CellRendererPane cellRendererPane=(CellRendererPane) jTree.getComponent(0);
+		final LegendTreeCellRenderer legendTree = (LegendTreeCellRenderer) cellRendererPane.getComponent(1);
+		legendTree.add(addJLegend.sliderOpacity(map));
+		final JSlider slider=(JSlider)legendTree.getComponent(2);
 		legend.setBorder(new LineBorder(new Color(205, 205, 255), 3));
+		legend.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent event) {
+				System.out.println("Clicked''''''''''''''''''''''''");
+				slider.addChangeListener(addJLegend.opacity(map));
+			}
+		});
+		legend.repaint();
 		panelMenuCapas.add(legend, BorderLayout.WEST);
 	}
 
@@ -313,38 +435,39 @@ public class CrearMapa {
 	final SimpleMarkerSymbol SYM_POINT = new SimpleMarkerSymbol(new Color(255, 4, 4), 10, Style.TRIANGLE);
 	SimpleLineSymbol SYM_LINE = new SimpleLineSymbol(new Color(0, 0, 0), 1); 
 	ArcGISLocalFeatureLayer arcGISLocalFeatureLayerSelect;
+	ArcGISLocalFeatureLayer arcGISLayerTem;
 	Graphic lineGraphic = new Graphic(inicioArrastre, SYM_POINT);
 	
 	public void seleccionarVariosPredios (final JMap map, final ArcGISLocalFeatureLayer arcGISLocalFeatureLayer) {
 		map.addMouseListener(new MouseAdapter() {
-			@SuppressWarnings("unused")
 			public void mousePressed(MouseEvent event) {
 				inicioArrastre = map.toMapPoint(event.getX(), event.getY());
-				Graphic lineGraphic = new Graphic(inicioArrastre, SYM_POINT);
+//				Graphic lineGraphic = new Graphic(inicioArrastre, SYM_POINT);
 				idLinea=0;
 				arcGISLocalFeatureLayerSelect = obtenerLayerSeleccionado(map);
+				arcGISLayerTem= getLayersVisible(map);
 			}
 			public void mouseReleased(MouseEvent arg0) {
 				if (GraphicLinea != null && arcGISLocalFeatureLayerSelect != null) {
-					final boolean visible = arcGISLocalFeatureLayerSelect.isVisible();
-					arcGISLocalFeatureLayer.removeGraphic(idLinea); 
+//					final boolean visible = arcGISLocalFeatureLayerSelect.isVisible();
+					arcGISLayerTem.removeGraphic(idLinea); 
 					obtenerFeatureSeleccionados (arcGISLocalFeatureLayerSelect,GraphicLinea, idLinea, map );
-					final Timer timer = new Timer(); 
-			        TimerTask timerTask = new TimerTask() {
-			            public void run(){
-			            	arcGISLocalFeatureLayerSelect.clearSelection();
-			            	timer.cancel(); 
-			            	arcGISLocalFeatureLayerSelect.setVisible(visible);  
-			            }
-			        };
-			       timer.scheduleAtFixedRate(timerTask, 800, 800);
+//					final Timer timer = new Timer(); 
+//			        TimerTask timerTask = new TimerTask() {
+//			            public void run(){
+//			            	arcGISLocalFeatureLayerSelect.clearSelection();
+//			            	timer.cancel(); 
+//			            	arcGISLocalFeatureLayerSelect.setVisible(visible);  
+//			            }
+//			        };
+//			       timer.scheduleAtFixedRate(timerTask, 800, 800);
 				}
 			}
 		});
 		map.addMouseMotionListener(new  MouseMotionAdapter() {
             public void mouseDragged(MouseEvent event) { 
-            	if (arcGISLocalFeatureLayer != null) {
-            		arcGISLocalFeatureLayer.refresh();            		
+            	if (arcGISLayerTem != null) {
+            		arcGISLayerTem.refresh();            		
             	}
             	finArrastre = map.toMapPoint(event.getX(), event.getY());
             	if (inicioArrastre != null && finArrastre != null) {
@@ -370,14 +493,14 @@ public class CrearMapa {
         			linea.addSegment(segment, false);
         			GraphicLinea  = new Graphic(polygon, SYM_LINE);
         			if (idLinea==0) {
-        				if (arcGISLocalFeatureLayer != null) {
-        					idLinea = arcGISLocalFeatureLayer.addGraphic(GraphicLinea);
-            				nameLayer = arcGISLocalFeatureLayer.getName();
+        				if (arcGISLayerTem != null) {
+        					idLinea = arcGISLayerTem.addGraphic(GraphicLinea);
+            				nameLayer = arcGISLayerTem.getName();
         				}
         			} else { 
-        				if (arcGISLocalFeatureLayer != null) {
-        					if (arcGISLocalFeatureLayer.getName().toLowerCase().equals(nameLayer.toLowerCase())) {
-        						arcGISLocalFeatureLayer.updateGraphic(idLinea, GraphicLinea); 
+        				if (arcGISLayerTem != null) {
+        					if (arcGISLayerTem.getName().toLowerCase().equals(nameLayer.toLowerCase())) {
+        						arcGISLayerTem.updateGraphic(idLinea, GraphicLinea); 
             				}
         				}
         			}
@@ -385,7 +508,6 @@ public class CrearMapa {
             }
        });
 	}
-	
 	
 	public ArcGISLocalFeatureLayer obtenerLayerSeleccionado (JMap map) {
 		String nameLayer ="";
@@ -417,7 +539,6 @@ public class CrearMapa {
 		return arcGISLocalFeatureLayers;
 	}
 	
-	@SuppressWarnings("unused")
 	public void obtenerFeatureSeleccionados (ArcGISLocalFeatureLayer arcGISFeatureLayer, Graphic graphic, int id, JMap map) {
 		Polygon polygonSeleccion = (Polygon) graphic.getGeometry();
 		List<Integer> listaInt = new ArrayList<Integer>();
@@ -427,18 +548,18 @@ public class CrearMapa {
 				int x = arcGISFeatureLayer.getGraphicIDs()[i];  
 				Graphic graphic2 = arcGISFeatureLayer.getGraphic(x); 
 				Polygon polygon = (Polygon) graphic2.getGeometry(); 
-				convinaciones(polygonSeleccion, polygon, graphic2.getId(), listaInt);	
+				combinaciones(polygonSeleccion, polygon, graphic2.getId(), listaInt);	
 			}
 			
 		}
 		if (listaInt.size() !=0 ) {
-			long TInicio = System.currentTimeMillis();
+//			long TInicio = System.currentTimeMillis();
 			for (int x : listaInt) {
 				arcGISFeatureLayer.select(x); 
 				arcGISFeatureLayer.setSelectionColor(Color.BLUE);
 				arcGISFeatureLayer.setVisible(true); 
 			} 
-			long TFin = System.currentTimeMillis();
+//			long TFin = System.currentTimeMillis();
 			if (identify == null) {  
 				identify = new Identify(map);
 				identify.setVisible(true);
@@ -464,7 +585,7 @@ public class CrearMapa {
 		GraphicLinea =null;
 	}  
 	
-	public void convinaciones (Polygon polygonSeleccion , Polygon polygon2, long id, List<Integer> listaInt) {
+	public void combinaciones (Polygon polygonSeleccion , Polygon polygon2, long id, List<Integer> listaInt) {
 		double xMin =0, xMax= 0, yMin=0, yMax=0;
 		for (int i=0; i<polygonSeleccion.getPointCount(); i++) {
 			Point point = polygonSeleccion.getPoint(i); 
@@ -498,7 +619,6 @@ public class CrearMapa {
 	}
 	
 	public void seleccionarPredio(JMap map, ArcGISLocalFeatureLayer arcGISFeatureLayer) {
-//		LayerList layerList = map.getLayers();
 		HitTestListener listener = SeleccionarPredio( map);
 		final HitTestOverlay selectionOverlay = new HitTestOverlay(arcGISFeatureLayer, listener);
 		map.addMapOverlay(selectionOverlay);
@@ -519,15 +639,15 @@ public class CrearMapa {
 							arcGISFeatureLayer.select((int) feature.getId());
 							arcGISFeatureLayer.setSelectionColor(Color.BLUE);
 							mostrarInformacionFeature (map, arcGISFeatureLayer, (int) feature.getId());
-							final Timer timer = new Timer(); 
-					        TimerTask timerTask = new TimerTask() {
-					            public void run() 
-					            {
-					            	arcGISFeatureLayer.clearSelection();
-					            	timer.cancel(); 
-					            }
-					        };
-					       timer.scheduleAtFixedRate(timerTask, 800, 800);
+//							final Timer timer = new Timer(); 
+//					        TimerTask timerTask = new TimerTask() {
+//					            public void run() 
+//					            {
+//					            	arcGISFeatureLayer.clearSelection();
+//					            	timer.cancel(); 
+//					            }
+//					        };
+//					       timer.scheduleAtFixedRate(timerTask, 800, 800);
 						}
 					}
 				}
@@ -535,7 +655,6 @@ public class CrearMapa {
 		};
 		return listener;
 	}
-	
 	
 	public void mostrarInformacionFeature (final JMap map, ArcGISLocalFeatureLayer arcGISLocalFeatureLayer, int id) {
 		if (identify == null) {  
@@ -606,4 +725,205 @@ public class CrearMapa {
 		changeBaseLayer(map, nameBaseLayer);
 	}
 	
+	final SimpleLineSymbol SymLine   = new SimpleLineSymbol(Color.RED, 2.0f);
+	final SimpleMarkerSymbol SymPoint =new SimpleMarkerSymbol(new Color(200, 0, 0, 200), 8, Style.CIRCLE);
+	final SimpleFillSymbol SymBuffer =new SimpleFillSymbol(new Color(0, 0, 255, 80), SymLine);
+	Polyline polyLine = new Polyline();
+	Polygon polygon = new Polygon();
+	Point    prevPoint;
+	Geometry bufferedArea = null;
+	int idGraphic=0, idPoint=0, idLine=0, num=0;
+	boolean starOver=false;
+	Point pointStart, pointEnd=null;
+	
+	public void bufferElements(MyComboBox cmbBuffer, JMap map, int distance){
+		switch (cmbBuffer.getSelectedIndex()) {
+		case 1:
+			bufferLine(map, distance);
+			break;
+		case 2:
+			bufferPoint(map, distance);
+			break;
+		case 3:
+			bufferPolygon(map);
+			break;
+		}
+	}
+	
+	public void bufferLine(final JMap map, final int distance){
+		map.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent event) {
+				arcGISLayerTem=getLayersVisible(map);
+				if(starOver){
+					removeGraphics();
+				}
+				Point point=map.toMapPoint(event.getX(), event.getY());
+				
+				if(event.getButton()==MouseEvent.BUTTON3){
+					if(polyLine.getSegmentCount()>0){
+						bufferedArea=GeometryEngine.buffer(polyLine, map.getSpatialReference(), 
+								distance, map.getSpatialReference().getUnit());
+					} else if (prevPoint != null) {
+						System.out.println("prevPoint");
+						bufferedArea = GeometryEngine.buffer(prevPoint,map.getSpatialReference(),
+								distance,map.getSpatialReference().getUnit());
+					}
+					Graphic bufferedGraphic = new Graphic(bufferedArea, SymBuffer);
+					if(idGraphic==0){
+						idGraphic = arcGISLayerTem.addGraphic(bufferedGraphic);
+					}else{
+						arcGISLayerTem.updateGraphic(idGraphic, bufferedGraphic);
+					}
+
+					prevPoint = null;
+					polyLine.setEmpty();
+					
+					if(idGraphic!=0){
+						starOver=true;
+					}
+					
+					return;
+				}
+				
+				Graphic currPointGraphic = new Graphic(point, SymPoint);
+				if(idPoint==0){
+					idPoint = arcGISLayerTem.addGraphic(currPointGraphic);
+				}else{
+					arcGISLayerTem.updateGraphic(idPoint, currPointGraphic);
+				}
+				
+				if (prevPoint != null) {
+					Line line = new Line();
+					line.setStart(prevPoint);
+					line.setEnd(point);
+
+					Segment segment = new Line();
+					segment.setStart(prevPoint);
+					segment.setEnd(point);
+					polyLine.addSegment(segment, false);
+					
+					Graphic lineGraphic = new Graphic(polyLine, SymLine);
+					if(idLine==0){
+						idLine= arcGISLayerTem.addGraphic(lineGraphic);
+					}else{
+						arcGISLayerTem.updateGraphic(idLine, lineGraphic);
+					}
+				}
+				prevPoint = point;	
+			}
+		});
+	}
+	
+	public void bufferPoint(final JMap map,final int distance){
+		map.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent event) {
+				arcGISLayerTem=getLayersVisible(map);
+				if(starOver){
+					removeGraphics();
+				}
+				Point point=map.toMapPoint(event.getX(), event.getY());
+				
+				if(event.getButton()==MouseEvent.BUTTON1){
+					bufferedArea = GeometryEngine.buffer(point, map.getSpatialReference(), distance, 
+							map.getSpatialReference().getUnit());
+					Graphic currPointGraphic = new Graphic(point, SymPoint);
+					Graphic bufferedGraphic = new Graphic(bufferedArea, SymBuffer);
+					if(idGraphic==0){
+						idPoint =arcGISLayerTem.addGraphic(currPointGraphic);
+						idGraphic = arcGISLayerTem.addGraphic(bufferedGraphic);
+					}else{
+						arcGISLayerTem.updateGraphic(idPoint, currPointGraphic);
+						arcGISLayerTem.updateGraphic(idGraphic, bufferedGraphic);
+					}
+					
+					starOver=true;
+			        
+			        return;
+				}
+			}
+		});
+	}
+	
+	public void bufferPolygon(final JMap map){
+		map.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent event) {
+				arcGISLayerTem=getLayersVisible(map);
+				if(starOver){
+					removeGraphics();
+				}
+				
+				Point point=map.toMapPoint(event.getX(), event.getY());
+				if(num==0){ polygon.startPath(point); }
+				if(event.getClickCount()==2){
+					prevPoint = null;
+					polygon.setEmpty();
+					starOver=true;
+					return;
+				}
+				
+				Graphic currPointGraphic = new Graphic(point, SymPoint);
+				if(idPoint==0){
+					idPoint = arcGISLayerTem.addGraphic(currPointGraphic);
+				}else{
+					arcGISLayerTem.updateGraphic(idPoint, currPointGraphic);
+				}
+				
+				if (prevPoint != null) {
+					polygon.lineTo(point);
+				}
+				
+				Graphic polygonGraphic = new Graphic(polygon, SymBuffer);
+				if(idLine==0){
+					idLine= arcGISLayerTem.addGraphic(polygonGraphic);
+				}else{
+					arcGISLayerTem.updateGraphic(idLine, polygonGraphic);
+				}
+				
+				prevPoint = point;
+				num++;
+			}
+		});
+	}
+	
+	public void removeGraphics(){
+		arcGISLayerTem.removeGraphic(idGraphic);
+		arcGISLayerTem.removeGraphic(idLine);
+		arcGISLayerTem.removeGraphic(idPoint);
+		idGraphic=idPoint=idLine=num=0;
+		starOver=false;
+	}
+	
+	public void clearFeaturesSelected(JMap map){
+		for (int i = 0; i < map.getLayers().size(); i++) {
+			if(!map.getLayers().get(i).getName().equals("Mapa Base")){
+				ArcGISLocalFeatureLayer arcGISFeatureLayer=(ArcGISLocalFeatureLayer) map.getLayers().get(i);
+				arcGISFeatureLayer.clearSelection();
+			}
+		}
+	}
+	
+	public void removeOverlays(JMap map){
+		for (int i = 0; i < map.getMapOverlays().size(); i++) {
+			map.removeMapOverlay(i);
+		}
+		eliminarEventoMapa(map);
+	}
+	
+	public ArcGISLocalFeatureLayer getLayersVisible(JMap map){
+		ArcGISLocalFeatureLayer featureLayer= null;
+		for (int i = 0; i < map.getLayers().size(); i++) {
+			if(!map.getLayers().get(i).getName().equals("Mapa Base")){
+				if(map.getLayers().get(i).isVisible()){
+					featureLayer=(ArcGISLocalFeatureLayer) map.getLayers().get(i);
+				}
+			}
+		}
+		return featureLayer;
+	}
+	
+	public void deleteClicked(JMap map){
+		for (int i = 0; i < map.getMouseListeners().length; i++) {
+			map.removeMouseListener(map.getMouseListeners()[i]);
+		}
+	}
 }

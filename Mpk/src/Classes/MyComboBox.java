@@ -1,8 +1,5 @@
 package Classes;
 
-import java.awt.Color;
-import java.awt.Dimension;
-
 import javax.swing.JComboBox;
 
 @SuppressWarnings({ "serial", "rawtypes" })
