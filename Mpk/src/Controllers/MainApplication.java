@@ -283,8 +283,8 @@ public class MainApplication {
 	      }
 	    });
 //		crearMapa.dibujarCapas(map, PanelLayers);
-		addJLegend.addElements(map, PanelLayers);
-//		addJLegend.createLegendLayers(map, PanelLayers);
+//		addJLegend.addElements(map, PanelLayers);
+		addJLegend.createLegendLayers(map, PanelLayers);
 //		PanelLayers.repaint();
 //		PanelLayers.updateUI();
 		

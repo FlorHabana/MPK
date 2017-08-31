@@ -42,7 +42,7 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 
 	public OwnLegend(){
 		setLayout(new BoxLayout(this, 0));
-
+		
 		this._visibilityCheckBox = new JCheckBox("");
 		add(this._visibilityCheckBox);
 
@@ -134,15 +134,12 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 	private void renderLayer(final Layer layer){
 		if (layer != null){
 			this._visibilityCheckBox.setSelected(layer.isVisible());
-//			customizeComponents(layer);
+			customizeComponents(layer);
 			this._nodeLabel.setText(layer.getName());
 			ImageIcon icon = null;
 			if ((layer instanceof ArcGISFeatureLayer)){
 				Geometry.Type geometryType = ((ArcGISFeatureLayer)layer).getGeometryType();
-				customizeComponents(layer);
 				if (geometryType != null) {
-					System.out.println("geometryType~~~~~~~~~~~"+geometryType);
-//					customizeComponents(layer);
 					switch (geometryType){
 					case POINT: 
 					case MULTIPOINT: 
@@ -167,13 +164,10 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 			}
 			this._nodeLabel.setIcon(icon);
 		}
-//		this.repaint();
-//		this.updateUI();
 	}
 	
 	/*********************JSlider Function****************************/
-	private void customizeComponents(Layer layer){
-		System.out.println("Customize JSlider");
+	private void customizeComponents(final Layer layer){
 		this._slider.setEnabled(layer.isVisible());
 		this._slider.setValue((int)(layer.getOpacity()*100));
 		this._slider.setVisible(true);
@@ -185,7 +179,14 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 		this._slider.setPaintLabels(true);
 		this._slider.setSnapToTicks(true);
 		this._slider.setFont(new Font("Serif", Font.ITALIC, 8));
-		this._slider.addChangeListener(opacityListener(layer));
+//		this._slider.addChangeListener(this.opacityListener(layer));
+		this._slider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				System.out.println("Changement;;;;;;;;;;;;;;;;");
+				JSlider source=(JSlider) e.getSource();
+				layer.setOpacity((float)(source.getValue()/100));
+			}
+		});
 	}
 	
 	private void valuesToSlider(Hashtable<Integer, JLabel> table) {
@@ -194,14 +195,16 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 		table.put(new Integer(0), new JLabel("0"));  
 	}
 
-	public ChangeListener opacityListener(final Layer layer){
-		ChangeListener sliderListener= new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				System.out.println("Changement;;;;;;;;;;;;;;;;");
-				JSlider source=(JSlider) e.getSource();
-				layer.setOpacity((float)(source.getValue()/100));
-			}
-		};
-		return sliderListener;
-	}
+//	private ChangeListener opacityListener(final Layer layer){
+//		System.out.println("esriesriesriesriesriesriesri");
+//		ChangeListener sliderListener= new ChangeListener() {
+//			public void stateChanged(ChangeEvent e) {
+//				System.out.println("Changement;;;;;;;;;;;;;;;;");
+//				JSlider source=(JSlider) e.getSource();
+//				layer.setOpacity((float)(source.getValue()/100));
+//			}
+//		};
+//		System.out.println("%%%%%%% "+sliderListener);
+//		return sliderListener;
+//	}
 }

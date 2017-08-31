@@ -336,13 +336,13 @@ public class CrearMapa {
 		JTree jTree= (JTree) viewport.getComponent(0);
 		CellRendererPane cellRendererPane=(CellRendererPane) jTree.getComponent(0);
 		final LegendTreeCellRenderer legendTree = (LegendTreeCellRenderer) cellRendererPane.getComponent(1);
-		legendTree.add(addJLegend.sliderOpacity(map));
+//		legendTree.add(addJLegend.sliderOpacity(map));
 		final JSlider slider=(JSlider)legendTree.getComponent(2);
 		legend.setBorder(new LineBorder(new Color(205, 205, 255), 3));
 		legend.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent event) {
 				System.out.println("Clicked''''''''''''''''''''''''");
-				slider.addChangeListener(addJLegend.opacity(map));
+//				slider.addChangeListener(addJLegend.opacity(map));
 			}
 		});
 		legend.repaint();

@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
@@ -52,7 +54,7 @@ public class OwnJLegend extends JPanel{
 			if (OwnJLegend.this.isEnabled()){
 				TreePath path = OwnJLegend.this._tree.getPathForLocation(e.getX(), e.getY());
 				if ((path != null) && (e.getX() < OwnJLegend.this._tree.getPathBounds(path).x 
-						+ this._hotspot)){
+						+ this._hotspot /*+ this._hotspot1 + this._hotspot2*/)){
 					Object userObject = ((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject();
 					if ((userObject instanceof Layer)){
 						Layer layer = (Layer)userObject;
@@ -149,7 +151,7 @@ public class OwnJLegend extends JPanel{
 			this._tree.setCellRenderer(new OwnLegend());
 			this._tree.getSelectionModel().setSelectionMode(4);
 			for (Layer curLayer : this._map.getLayers()) {
-				addLayerToLegend(curLayer, this._rootNode, -1);
+				addLayerToLegend(curLayer, this._rootNode, -1);	
 			}
 			this._tree.expandPath(new TreePath(this._rootNode));
 			
