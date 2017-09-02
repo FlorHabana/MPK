@@ -24,19 +24,20 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 public class OwnJLegend extends JPanel{
 	private static final long serialVersionUID = 1L;
@@ -50,14 +51,18 @@ public class OwnJLegend extends JPanel{
 		protected LegendMouseListener() {}
 
 		public void mouseClicked(MouseEvent e){
-			
+
 			if (OwnJLegend.this.isEnabled()){
 				TreePath path = OwnJLegend.this._tree.getPathForLocation(e.getX(), e.getY());
 				if ((path != null) && (e.getX() < OwnJLegend.this._tree.getPathBounds(path).x 
-						+ this._hotspot /*+ this._hotspot1 + this._hotspot2*/)){
+						+ this._hotspot)){
 					Object userObject = ((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject();
+					System.out.println("5555555555");
 					if ((userObject instanceof Layer)){
 						Layer layer = (Layer)userObject;
+						JSliderEditorP editor= new JSliderEditorP();
+						System.out.println("Agregando CellEditor");
+						OwnJLegend.this._tree.setCellEditor(editor);
 						layer.setVisible(!layer.isVisible());
 					}else if ((userObject instanceof LayerInfo)){
 						LayerInfo info = (LayerInfo)userObject;
@@ -148,13 +153,13 @@ public class OwnJLegend extends JPanel{
 		this._tree.setShowsRootHandles(true);
 		this._tree.setModel(this._model);
 		if (this._map != null){
+//			JSliderEditorP editor = new JSliderEditorP();
+//			TreeCellEditor _editor= new DefaultTreeCellEditor(this._tree, new OwnLegend(), editor);
 			this._tree.setCellRenderer(new OwnLegend());
-			this._tree.getSelectionModel().setSelectionMode(4);
 			for (Layer curLayer : this._map.getLayers()) {
 				addLayerToLegend(curLayer, this._rootNode, -1);	
 			}
 			this._tree.expandPath(new TreePath(this._rootNode));
-			
 			this._map.getLayers().addLayerListEventListener(this._layerListEventListener);
 			this._tree.addTreeWillExpandListener(this._treeWillExpandListener);
 			this._tree.addMouseListener(this._legendMouseListener);

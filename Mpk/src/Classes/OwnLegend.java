@@ -10,23 +10,13 @@ import com.esri.map.LayerInfo;
 import com.esri.map.WmsLayerInfo;
 import com.esri.toolkit.utilities.ExceptionHandler;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.SystemColor;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Hashtable;
 
 import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -37,8 +27,8 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 	private static final long serialVersionUID = 1L;
 	private JCheckBox _visibilityCheckBox;
 	private JLabel _nodeLabel;
-	private JSlider _slider;
-	private Hashtable<Integer, JLabel> opacitylabelTable = new Hashtable<Integer, JLabel>();
+//	private JSlider _slider;
+//	private Hashtable<Integer, JLabel> opacitylabelTable = new Hashtable<Integer, JLabel>();
 
 	public OwnLegend(){
 		setLayout(new BoxLayout(this, 0));
@@ -48,13 +38,10 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 
 		this._nodeLabel = new JLabel("New label");
 		add(this._nodeLabel);
-
-		this._slider = new JSlider();
-		add(this._slider);
+		
+		add(new TableRenderer());
 	}
 	
-	public JSlider getSlider(){return this._slider;}
-
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, 
 			boolean leaf, int row, boolean hasFocus){
 		setBackground(selected ? SystemColor.textHighlight : tree.getBackground());
@@ -82,13 +69,13 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 		this._visibilityCheckBox.setVisible(false);
 		this._nodeLabel.setText(legendInfo.getLayerName());
 		this._nodeLabel.setIcon(new ImageIcon(getClass().getResource("/com/esri/client/toolkit/images/LayerServiceMap16.png")));
-		this._slider.setVisible(false);
+//		this._slider.setVisible(false);
 	}
 
 	private void renderLegendItem(LegendItemInfo legendItem){
 		ImageIcon imageIcon = null;
 		this._visibilityCheckBox.setVisible(false);
-		this._slider.setVisible(false);
+//		this._slider.setVisible(false);
 		this._nodeLabel.setText(legendItem.getLabel());
 		byte[] imageBytes = legendItem.getImageBytes();
 		if (imageBytes != null){
@@ -121,7 +108,7 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 			icon = new ImageIcon(getClass().getResource("/com/esri/client/toolkit/images/LayerServiceMap16.png"));
 		}
 		this._visibilityCheckBox.setSelected(layerInfo.isVisible());
-		this._slider.setEnabled(layerInfo.isVisible());
+//		this._slider.setEnabled(layerInfo.isVisible());
 		if ((layerInfo instanceof WmsLayerInfo)) {
 			this._nodeLabel.setText(((WmsLayerInfo)layerInfo).getDisplayName());
 		} else {
@@ -133,8 +120,10 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 	@SuppressWarnings("incomplete-switch")
 	private void renderLayer(final Layer layer){
 		if (layer != null){
+//			this._slider.setEnabled(layer.isVisible());
+//			this._slider.setValue((int)(layer.getOpacity()*100));
+//			this._slider.addChangeListener(this.opacityListener(layer));
 			this._visibilityCheckBox.setSelected(layer.isVisible());
-			customizeComponents(layer);
 			this._nodeLabel.setText(layer.getName());
 			ImageIcon icon = null;
 			if ((layer instanceof ArcGISFeatureLayer)){
@@ -167,44 +156,30 @@ public class OwnLegend extends JPanel implements TreeCellRenderer{
 	}
 	
 	/*********************JSlider Function****************************/
-	private void customizeComponents(final Layer layer){
-		this._slider.setEnabled(layer.isVisible());
-		this._slider.setValue((int)(layer.getOpacity()*100));
-		this._slider.setVisible(true);
-		this._slider.setBackground(new Color(0,0,0,0));
-		valuesToSlider(opacitylabelTable);
-		this._slider.setLabelTable(opacitylabelTable);
-		this._slider.setMajorTickSpacing(50);
-		this._slider.setPaintTicks(true);
-		this._slider.setPaintLabels(true);
-		this._slider.setSnapToTicks(true);
-		this._slider.setFont(new Font("Serif", Font.ITALIC, 8));
-//		this._slider.addChangeListener(this.opacityListener(layer));
-		this._slider.addChangeListener(new ChangeListener() {
+//	private void customizeComponents(){
+//		this._slider.setVisible(true);
+//		this._slider.setBackground(new Color(0,0,0,0));
+//		valuesToSlider(opacitylabelTable);
+//		this._slider.setLabelTable(opacitylabelTable);
+//		this._slider.setMajorTickSpacing(50);
+//		this._slider.setPaintTicks(true);
+//		this._slider.setPaintLabels(true);
+//		this._slider.setFont(new Font("Serif", Font.ITALIC, 8));
+//	}
+	
+//	private void valuesToSlider(Hashtable<Integer, JLabel> table) {
+//		table.put(new Integer(100), new JLabel("1"));   
+//		table.put(new Integer(50), new JLabel("0.5"));   
+//		table.put(new Integer(0), new JLabel("0"));  
+//	}
+
+	private ChangeListener opacityListener(final Layer layer){
+		ChangeListener sliderListener= new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				System.out.println("Changement;;;;;;;;;;;;;;;;");
 				JSlider source=(JSlider) e.getSource();
 				layer.setOpacity((float)(source.getValue()/100));
 			}
-		});
+		};
+		return sliderListener;
 	}
-	
-	private void valuesToSlider(Hashtable<Integer, JLabel> table) {
-		table.put(new Integer(100), new JLabel("1"));   
-		table.put(new Integer(50), new JLabel("0.5"));   
-		table.put(new Integer(0), new JLabel("0"));  
-	}
-
-//	private ChangeListener opacityListener(final Layer layer){
-//		System.out.println("esriesriesriesriesriesriesri");
-//		ChangeListener sliderListener= new ChangeListener() {
-//			public void stateChanged(ChangeEvent e) {
-//				System.out.println("Changement;;;;;;;;;;;;;;;;");
-//				JSlider source=(JSlider) e.getSource();
-//				layer.setOpacity((float)(source.getValue()/100));
-//			}
-//		};
-//		System.out.println("%%%%%%% "+sliderListener);
-//		return sliderListener;
-//	}
 }
